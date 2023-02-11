@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<truthTable>
+  <variables>
+    <variable name="A"/>
+    <variable name="B"/>
+  </variables>
+  <results>
+    <result>
+      <name>Output</name>
+      <values class="BoolTable">0111</values>
+    </result>
+  </results>
+</truthTable>
