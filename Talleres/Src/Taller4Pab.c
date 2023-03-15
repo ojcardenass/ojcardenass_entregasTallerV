@@ -35,8 +35,8 @@ int main(void)
 
 			// Operadores Bitwise ( &,|,^ )
 
-			uint8_t variableA = 0b00111101;
-			uint8_t variableB = 0b11111111;
+			uint32_t variableA = 0b10100001001;
+			uint32_t variableB = 0b1;
 
 			//OR
 			uint8_t resultado = variableA | variableB;
