@@ -15,6 +15,11 @@ int main(void)
 		// Operaciones básicas
 			uint16_t varOperadores = 12;
 
+			//Convertir decimal a binario
+			uint8_t count = 60;
+			uint8_t valor = 0;
+			valor = (count & 0b111100);
+
 			// Operaciones
 			varOperadores = varOperadores +1;
 			varOperadores ++;
@@ -26,10 +31,10 @@ int main(void)
 
 			//SHIFT
 
-			uint8_t testVar = 0b00000101;
+			uint8_t testVar = 0b1;
 
-			testVar = testVar << 1;
-			testVar >>= 1;
+			testVar >>= 2;
+			testVar <<= 1;
 
 			testVar = testVar << 4;
 
@@ -59,6 +64,8 @@ int main(void)
 
 		//	Setting and Clearing of bits
 		//
+
+
 	}
 
 	return 0;

@@ -12,7 +12,6 @@
 
 #include "GPIOxDriver.h"
 
-
 /*
  * Para cualquer periferico, hay varios pasos que siempre se deben seguir en un
  * orden estricto para poder que el sistema permita configurar el periferico X.
@@ -103,9 +102,9 @@ void GPIO_Config (GPIO_Handler_t *pGPIOHandler){
 	// Esta es la parte para la configuracion de las funciones alternativas... se vera luego
 	if(pGPIOHandler->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_ALTFN){
 
-		//Seleccionamos primero si se debe utilizar el registro bajo (AFRL) o el alto (AFRH)
+		//Seleccionamos primero si se debe utilizar el registro bajo (AFR[0]) o el alto (AFR[1])
 		if(pGPIOHandler->GPIO_PinConfig.GPIO_PinNumber < 8){
-			//Estamos en el registro AFRL, que controla los pines del PIN_0 AL PIN_7
+			//Estamos en el registro AFR[0], que controla los pines del PIN_0 AL PIN_7
 			auxPosition = 4 * pGPIOHandler->GPIO_PinConfig.GPIO_PinNumber;
 
 			//Limpiamos primero la posicion del registro que deseamos escribir a continuacion
@@ -115,7 +114,7 @@ void GPIO_Config (GPIO_Handler_t *pGPIOHandler){
 			pGPIOHandler->pGPIOx->AFR[0] |= (pGPIOHandler->GPIO_PinConfig.GPIO_PinAltFunMode << auxPosition);
 		}
 		else{
-			//Estamos en el registro AFRH, que controla los pines del PIN_8 AL PIN_15
+			//Estamos en el registro AFR[1], que controla los pines del PIN_8 AL PIN_15
 			auxPosition = 4 * (pGPIOHandler->GPIO_PinConfig.GPIO_PinNumber -8);
 
 			//Limpiamos primero la posicion del registro que deseamos escribir a continuacion
@@ -144,7 +143,7 @@ void GPIO_WritePin(GPIO_Handler_t *pPinHandler, uint8_t newState){
 		//Trabajando con la parte alta del registro
 		pPinHandler->pGPIOx->BSRR |= (SET << (pPinHandler->GPIO_PinConfig.GPIO_PinNumber +16));
 	}
-}
+} // FIN DEL GPIO_WritePin
 
 /**
  * Funcion para leer el estado de un pin especifico
@@ -156,8 +155,17 @@ uint32_t GPIO_ReadPin(GPIO_Handler_t *pPinHandler){
 	//Cargamos el valor del registro IDR, desplazado a derecha tantas veces como la ubicacion
 	//del pin especifico
 	pinValue = (pPinHandler->pGPIOx->IDR >> pPinHandler->GPIO_PinConfig.GPIO_PinNumber);
-
+	// Mascara necesaria para que la funcion solo tenga en cuenta el valor del pin asignado, que es
+	//la posicion mas a la derecha.
+	pinValue &= 0b1;
 	return pinValue;
-
 }
 
+/*
+* Función para invertir el estado de un pin de salida.
+*/
+void GPIOxTooglePin(GPIO_Handler_t *pPinHandler){
+	// Invertimos el estado del pin de salida por medio de una operación XOR con
+	// una máscara que contiene un 1 en la posición a invertir.
+	pPinHandler->pGPIOx->ODR ^= (SET << pPinHandler->GPIO_PinConfig.GPIO_PinNumber);
+}

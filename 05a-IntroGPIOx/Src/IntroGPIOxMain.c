@@ -41,6 +41,8 @@
 #include "stm32f411xx_hal.h"
 #include "GPIOxDriver.h"
 
+uint32_t valor=0;
+
 /* funcion principal del programa. Es aca donde se ejecuta todo */
 int main(void){
 
@@ -62,6 +64,8 @@ int main(void){
 
 	//Hacemos que el PIN_A5 quede encendido
 	GPIO_WritePin(&handlerUserLedPin, SET);
+
+	valor=GPIO_ReadPin(&handlerUserLedPin);
 
 	//Este es el ciclo principal, donde se ejecuta todo el programa
 	while(1){

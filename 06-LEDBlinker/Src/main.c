@@ -50,7 +50,7 @@ int main(void)
 		//Resetear la bandera del TIMER y encender el LED con la funcion TogglePin
 		if(TIM2->SR & TIM_SR_UIF){
 			TIM2->SR &= ~TIM_SR_UIF;
-			GPIO_TogglePin(&handlerOnBoardLed);
+			GPIOxTooglePin(&handlerOnBoardLed);
 		}
 
 	}
