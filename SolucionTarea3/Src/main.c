@@ -315,11 +315,7 @@ uint8_t upperLimit, uint8_t lowerLimit, uint8_t *counter, uint8_t runCycle){
 		//Si se detecta un flanco de bajada y data en 1
 		if(*extiFlag && (GPIO_ReadPin(handler1) == 1)){
 		// Cuando el counter llegue a upperLimit queda en upperLimit
-			if (*counter >= upperLimit){
-				*counter = upperLimit;
-			}
-			// En otros casos se aumenta uno al counter
-			else{
+			if (*counter < upperLimit){
 				(*counter) ++;
 			}
 			// Bajar la bandera del EXTI
@@ -327,11 +323,7 @@ uint8_t upperLimit, uint8_t lowerLimit, uint8_t *counter, uint8_t runCycle){
 		}
 		//Si se detecta un flanco de bajada y data en 0
 		else if(*extiFlag && (GPIO_ReadPin(handler1) == 0)){
-			if(*counter <= lowerLimit){
-				*counter = lowerLimit;
-			}
-			// De lo contrario se resta 1
-			else{
+			if(*counter > lowerLimit){
 				(*counter) --;
 			}
 			// Bajar la bandera del EXTI
