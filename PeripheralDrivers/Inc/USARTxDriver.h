@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include "stm32f4xx.h"
 
 #ifndef USARTXDRIVER_H_
 #define USARTXDRIVER_H_

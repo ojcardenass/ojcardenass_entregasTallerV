@@ -5,7 +5,10 @@
  *      Author: julian
  */
 #include <stdio.h>
+#include "stm32f4xx.h"
 #include "SPIxDriver.h"
+
+extern SPI_Handler_t HandlerSPI;
 
 #ifndef MAX7219DRIVER_H_
 #define MAX7219DRIVER_H_
@@ -38,7 +41,7 @@
 #define NO_TEST			0
 #define TEST			1
 
-void send_to_MAX7219(SPI_Handler_t *ptrSPIHandler,uint8_t reg, uint8_t data);
-void clearDisplay_MAX7219(SPI_Handler_t *ptrSPIHandler);
+void send_to_MAX7219(uint8_t reg, uint8_t data);
+void clearDisplay_MAX7219(void);
 
 #endif /* MAX7219DRIVER_H_ */

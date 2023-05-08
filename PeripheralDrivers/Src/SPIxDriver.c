@@ -5,7 +5,7 @@
  *      Author: julian
  */
 
-#include <stm32f4xx.h>
+#include "stm32f4xx.h"
 #include "SPIxDriver.h"
 
 /*
@@ -89,6 +89,9 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	else if(ptrSPIHandler->SPIConfig.DeviceMode == SPI_DEVICE_MODE_SLAVE){
 		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_MSTR;
 	}
+	else{
+		__NOP();
+	}
 
 	// CONFIGURAMOS EL BAUD RATE
 	//EJM: fPCLK/16, APB2 CLOCK = 100MHz, SPI clk = 6.25MHz
@@ -116,13 +119,8 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	else if(ptrSPIHandler->SPIConfig.BaudRatePrescaler == SPI_SCLK_SPEED_DIV256){
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_BR;
 	}
-
-	// Activamos el modulo serial
-	if(ptrSPIHandler->SPIConfig.OpMode == SPI_ENABLE){
-		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SPE;
-	}
 	else{
-		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SPE;
+		__NOP();
 	}
 
 	// Elegimos que cual bit va primero LSB o MSB
@@ -140,11 +138,16 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_ENABLE){
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSM; //Activamos el SSM
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSI; //Activamos el SSI
+		ptrSPIHandler->ptrSPIx->CR2 |= SPI_CR2_SSOE; //Activamos el SSOE
 	}
 	else if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_DISABLE){
 		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSM; //Desactivamos el SSM
 		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSI; //Desactivamos el SSI
+		ptrSPIHandler->ptrSPIx->CR2 &= ~ SPI_CR2_SSOE; //Desactivamos el SSOE
 	} // Esto lo uso para afectar el LOAD
+	else{
+		__NOP();
+	}
 
 	// Configuring the Data Size
 	// Debe estar apagado el SPI para configurar
@@ -153,6 +156,9 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	}
 	else if(ptrSPIHandler->SPIConfig.DataSize == SPI_DATA_SIZE_16BITS){
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_DFF;
+	}
+	else{
+		__NOP();
 	}
 
 	// Configuring the Bus Configuration
@@ -166,6 +172,14 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_RXONLY;
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_BIDIMODE;
 	}
+	// Transmission Only
+	else if(ptrSPIHandler->SPIConfig.DirectionBusConfig == SPI_BUS_CONFIG_TX){
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_BIDIOE;
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_BIDIMODE;
+	}
+	else{
+		__NOP();
+	}
 
 	// Configuring the CRC
 	if(ptrSPIHandler->SPIConfig.CRCCalculation == SPI_CRC_ENABLE){
@@ -174,6 +188,9 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	else if(ptrSPIHandler->SPIConfig.CRCCalculation == SPI_CRC_DISABLE){
 			ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_CRCEN;
 	}
+	else{
+		__NOP();
+	}
 
 	//Configuring the CR2 Register
 
@@ -181,10 +198,23 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 		ptrSPIHandler->ptrSPIx->CR2 &= ~ SPI_CR2_FRF;
 	}
 
-	if(ptrSPIHandler->SPIConfig.FrameFormat == SPI_TI_MODE){
+	else if(ptrSPIHandler->SPIConfig.FrameFormat == SPI_TI_MODE){
 			ptrSPIHandler->ptrSPIx->CR2 |= SPI_CR2_FRF;
-		}
+	}
+	else{
+		__NOP();
+	}
 
+	// Activamos el modulo serial
+	if(ptrSPIHandler->SPIConfig.State == SPI_ENABLE){
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SPE;
+	}
+	else if(ptrSPIHandler->SPIConfig.State == SPI_DISABLE){
+		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SPE;
+	}
+	else{
+		__NOP();
+	}
 
 }
 
@@ -207,14 +237,14 @@ write operation to the SPI_DR register and BSY bit setting. As a consequence it 
 mandatory to wait first until TXE is set and then until BSY is cleared after writing the last
 data.
 */
-	while( !(ptrSPIHandler->ptrSPIx->SR & SPI_SR_TXE)){
-	   __NOP();
-	}; // wait for TXE bit to set -> This will indicate that the buffer is empty
+//	while( !(ptrSPIHandler->ptrSPIx->SR & SPI_SR_TXE)){
+//	   __NOP();
+//	}; // wait for TXE bit to set -> This will indicate that the buffer is empty
 	while((ptrSPIHandler->ptrSPIx->SR & SPI_SR_BSY)){
 		__NOP();
 	}; // wait for BSY bit to Reset -> This will indicate that SPI is not busy in communication
-
-	//  Clear the Overrun flag by reading DR and SR
-	temp = ptrSPIHandler->ptrSPIx->DR;
-	temp = ptrSPIHandler->ptrSPIx->SR;
+//
+//	//  Clear the Overrun flag by reading DR and SR
+//	temp = ptrSPIHandler->ptrSPIx->DR;
+//	temp = ptrSPIHandler->ptrSPIx->SR;
 }

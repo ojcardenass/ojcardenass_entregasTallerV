@@ -26,24 +26,16 @@ BasicTimer_Handler_t 		handlerBlinkyTimer 			=	{0};
 SPI_Handler_t				handlerSPI					=	{0};
 
 /*Prototipo de las funciones del main*/
+void SPI2_SendData(uint8_t data);
 void init_Hardware(void);
-void init_MAX7219(void);
-void sendMAX7219(uint8_t reg, uint8_t data);
+uint8_t TxBuffer = 0x0;
 
 int main(void){
 	/*Inicializacion de todos los elementos del sistema*/
 	init_Hardware();
-	init_MAX7219();
 
 	while(1){
-		send_to_MAX7219(DIGIT0, 0x81);
-		send_to_MAX7219(DIGIT1, 0x42);
-		send_to_MAX7219(DIGIT2, 0x24);
-		send_to_MAX7219(DIGIT3, 0x18);
-		send_to_MAX7219(DIGIT4, 0x18);
-		send_to_MAX7219(DIGIT5, 0x24);
-		send_to_MAX7219(DIGIT6, 0x42);
-		send_to_MAX7219(DIGIT7, 0x81);
+		SPI_Send(&handlerSPI, TxBuffer);
 	} // FIN CICLO INFINITO
 } // FIN DEL MAIN
 
@@ -126,16 +118,15 @@ void init_Hardware(void){
 
 }// Termina el init_Hardware
 
-void init_MAX7219(void){
-	send_to_MAX7219(DECO_MODE, NO_DECO);
-	send_to_MAX7219(INTENSITY, 0x00);
-	send_to_MAX7219(SCAN_LIMIT,ALL);
-	send_to_MAX7219(SHUTDOWN, NORMAL);
-	send_to_MAX7219(DISPLAY_TEST, NO_TEST);
-	clearDisplay_MAX7219();
-} // Termina el Init MAX7219
-
 // Blinky del led de estado
 void BasicTimer2_Callback(void){
 	handlerLED2.pGPIOx -> ODR ^= GPIO_ODR_OD5;
 }
+
+
+//void SPI2_SendData(uint8_t data)
+//{
+//    while (!(SPI2->SR & SPI_SR_TXE)) {} // Wait for TXE flag to be set
+//    SPI2->DR = data;                    // Write data to DR register
+//    while (SPI2->SR & SPI_SR_BSY) {}    // Wait for BSY flag to be reset
+//}

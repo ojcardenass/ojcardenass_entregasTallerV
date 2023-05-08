@@ -17,7 +17,7 @@
 	// @SPI_busconfig
 #define SPI_BUS_CONFIG_FD					1 //Full Duplex
 #define SPI_BUS_CONFIG_HD					2 // Half Duplex
-#define SPI_BUS_CONFIG_SIMPLEX_RXONLY		3 // Simplex
+#define SPI_BUS_CONFIG_TX					3 // Tx Only
 	//@SPI_ClockConfig
 #define SPI_SCLK_SPEED_DIV2					0
 #define SPI_SCLK_SPEED_DIV4					1
@@ -45,7 +45,7 @@ MODO3	1		1
 // Frame format LSB o MSB transmitted first
 #define SPI_LSBFIRST						1
 #define SPI_MSBFIRST						0
-	//@SPI_Operation MODE
+	//@SPI_Status MODE
 #define SPI_DISABLE							0
 #define SPI_ENABLE							1
 	//SPI_NSS
@@ -74,7 +74,7 @@ typedef struct{
 	uint8_t SPIMode;			// SPI Mode
 	uint8_t FirstBit;			// LSB o MSB transmitted first
 	uint8_t NSS;				// Specifies whether the NSS signal is managed by hardware (NSS pin) or by software using the SSI bit.
-	uint8_t OpMode;				// SPI Enable / Disable
+	uint8_t State;				// SPI Enable / Disable
 	uint8_t TIMode;				// TI Mode Enable / Disable (Error when NSS pulse occurs in transmission)
 	uint8_t CRCCalculation;		// CRC Enable / Disable
 	uint8_t CRCPolinomial;		// Polynomial used for CRC, This parameter must be an odd number between Min_Data = 1 and Max_Data = 65535
