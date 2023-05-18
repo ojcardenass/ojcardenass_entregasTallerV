@@ -7,8 +7,7 @@
 #include <stdio.h>
 #include "stm32f4xx.h"
 #include "SPIxDriver.h"
-
-extern SPI_Handler_t HandlerSPI;
+#include "GPIOxDriver.h"
 
 #ifndef MAX7219DRIVER_H_
 #define MAX7219DRIVER_H_
@@ -30,6 +29,8 @@ extern SPI_Handler_t HandlerSPI;
 #define SCAN_LIMIT		0x0B
 #define SHUTDOWN		0x0C
 #define DISPLAY_TEST	0x0F
+
+
 //SHUTDOWN
 #define SHTDOWN			0
 #define NORMAL			1
@@ -38,10 +39,26 @@ extern SPI_Handler_t HandlerSPI;
 // SCAN LIMIT
 #define ALL				0x07 // Todos los 8 digitos
 //DISPLUA TEST
-#define NO_TEST			0
-#define TEST			1
+#define NO_TEST			0x00
+#define TEST			0x01
 
 void send_to_MAX7219(uint8_t reg, uint8_t data);
-void clearDisplay_MAX7219(void);
+void clearDisplay(void);
+void MAX7219_Init(void);
+void displayTest(void);
+void displayNOTest(void);
+void noDeco(void);
+void setIntensity(uint8_t intensity);
+void scanLimit(void);
+void shutdown(int normal);
+
+void sendMatrix1(uint8_t addr, uint8_t data);
+void sendMatrix2(uint8_t addr, uint8_t data);
+void sendMatrix3(uint8_t addr, uint8_t data);
+void sendMatrix4(uint8_t addr, uint8_t data);
+void sendNO_OP(void);
+
+void setRow(uint8_t row);
+void setColumn(uint8_t col);
 
 #endif /* MAX7219DRIVER_H_ */

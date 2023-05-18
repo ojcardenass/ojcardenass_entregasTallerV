@@ -80,19 +80,6 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 		__NOP();
 	}
 
-	// CONFIGURAMOS EL TIPO DE DISPOSITIVO
-	// Maestro = 1
-	if(ptrSPIHandler->SPIConfig.DeviceMode == SPI_DEVICE_MODE_MASTER){
-		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_MSTR;
-	}
-	// Slave = 0
-	else if(ptrSPIHandler->SPIConfig.DeviceMode == SPI_DEVICE_MODE_SLAVE){
-		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_MSTR;
-	}
-	else{
-		__NOP();
-	}
-
 	// CONFIGURAMOS EL BAUD RATE
 	//EJM: fPCLK/16, APB2 CLOCK = 100MHz, SPI clk = 6.25MHz
 	if(ptrSPIHandler->SPIConfig.BaudRatePrescaler == SPI_SCLK_SPEED_DIV2){
@@ -129,24 +116,6 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	}
 	else{
 		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_LSBFIRST;
-	}
-
-	// Configuring the NSS (Negative Slave Select) the chip select signal is active-low
-	// meaning that it is low when the device is selected and high when it is not.
-	// For NSS to work properly SSM and SSI must be configured
-
-	if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_ENABLE){
-		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSM; //Activamos el SSM
-		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSI; //Activamos el SSI
-		ptrSPIHandler->ptrSPIx->CR2 |= SPI_CR2_SSOE; //Activamos el SSOE
-	}
-	else if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_DISABLE){
-		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSM; //Desactivamos el SSM
-		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSI; //Desactivamos el SSI
-		ptrSPIHandler->ptrSPIx->CR2 &= ~ SPI_CR2_SSOE; //Desactivamos el SSOE
-	} // Esto lo uso para afectar el LOAD
-	else{
-		__NOP();
 	}
 
 	// Configuring the Data Size
@@ -205,6 +174,42 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 		__NOP();
 	}
 
+
+	// CONFIGURAMOS EL TIPO DE DISPOSITIVO
+	// Maestro = 1
+	if(ptrSPIHandler->SPIConfig.DeviceMode == SPI_DEVICE_MODE_MASTER){
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_MSTR;
+	}
+	// Slave = 0
+	else if(ptrSPIHandler->SPIConfig.DeviceMode == SPI_DEVICE_MODE_SLAVE){
+		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_MSTR;
+	}
+	else{
+		__NOP();
+	}
+
+	// Configuring the NSS (Negative Slave Select) the chip select signal is active-low
+	// meaning that it is low when the device is selected and high when it is not.
+	// For NSS to work properly SSM and SSI must be configured
+
+	// In NSS software mode, set the SSM bit and clear the SSI bit in the SPI_CR1 register
+	// La Familia F4 no tiene manera de generar un pulso en el PIN NSS, asi que es necesario
+	// hacerlo manualmente
+
+	if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_ENABLE){
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSM; //Activamos el SSM
+		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SSI; //Activamos el SSI
+		//ptrSPIHandler->ptrSPIx->CR2 |= SPI_CR2_SSOE; //Activamos el SSOE
+	}
+	else if(ptrSPIHandler->SPIConfig.NSS == SPI_NSS_DISABLE){
+		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSM; //Desactivamos el SSM
+		ptrSPIHandler->ptrSPIx->CR1 &= ~ SPI_CR1_SSI; //Desactivamos el SSI
+		//ptrSPIHandler->ptrSPIx->CR2 &= ~ SPI_CR2_SSOE; //Desactivamos el SSOE
+	} // Esto lo uso para afectar el LOAD
+	else{
+		__NOP();
+	}
+
 	// Activamos el modulo serial
 	if(ptrSPIHandler->SPIConfig.State == SPI_ENABLE){
 		ptrSPIHandler->ptrSPIx->CR1 |= SPI_CR1_SPE;
@@ -216,6 +221,16 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 		__NOP();
 	}
 
+}
+
+/*Seleccionamos el esclavo llevando el pin NSS a GND*/
+void NSS_LOW(SPI_Handler_t* ptrSPIHandler){
+	GPIO_WritePin(&ptrSPIHandler->NSS_Pin, RESET);
+}
+
+/*Seleccionamos el esclavo llenando el pin NSS a VCC*/
+void NSS_HIGH(SPI_Handler_t* ptrSPIHandler){
+	GPIO_WritePin(&ptrSPIHandler->NSS_Pin, SET);
 }
 
 
@@ -230,21 +245,21 @@ void SPI_Send(SPI_Handler_t *ptrSPIHandler, uint8_t TxBuffer){
    while( !(ptrSPIHandler->ptrSPIx->SR & SPI_SR_TXE)){
 	   __NOP();
    };  // wait for TXE bit to set -> This will indicate that the buffer is empty
-   ptrSPIHandler->ptrSPIx->DR |= TxBuffer; // load the data into the Data Register
+   ptrSPIHandler->ptrSPIx->DR = TxBuffer; // load the data into the Data Register
 
 /*During discontinuous communications, there is a 2 APB clock period delay between the
 write operation to the SPI_DR register and BSY bit setting. As a consequence it is
 mandatory to wait first until TXE is set and then until BSY is cleared after writing the last
 data.
 */
-//	while( !(ptrSPIHandler->ptrSPIx->SR & SPI_SR_TXE)){
-//	   __NOP();
-//	}; // wait for TXE bit to set -> This will indicate that the buffer is empty
+	while( !(ptrSPIHandler->ptrSPIx->SR & SPI_SR_TXE)){
+	   __NOP();
+	}; // wait for TXE bit to set -> This will indicate that the buffer is empty
 	while((ptrSPIHandler->ptrSPIx->SR & SPI_SR_BSY)){
 		__NOP();
 	}; // wait for BSY bit to Reset -> This will indicate that SPI is not busy in communication
-//
-//	//  Clear the Overrun flag by reading DR and SR
-//	temp = ptrSPIHandler->ptrSPIx->DR;
-//	temp = ptrSPIHandler->ptrSPIx->SR;
+
+	//  Clear the Overrun flag by reading DR and SR
+	temp = ptrSPIHandler->ptrSPIx->DR;
+	temp = ptrSPIHandler->ptrSPIx->SR;
 }

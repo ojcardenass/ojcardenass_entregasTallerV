@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include "GPIOxDriver.h"
 
 #ifndef SPIXDRIVER_H_
 #define SPIXDRIVER_H_
@@ -87,6 +88,7 @@ typedef struct{
 typedef struct{
 	SPI_TypeDef    *ptrSPIx	 ;	// this holds the base address of spix(1 ,2,3,4) peripheral
 	SPI_Config_t   SPIConfig ;	// SPI communication parameters
+	GPIO_Handler_t	NSS_Pin	 ;  // NSS Pin status selection
 	uint8_t		   *pTxBuffer;	// To store the app tx buffer address
 	uint8_t		   *pRxBuffer;	// To store the app rx buffer address
 	uint32_t	    TxSize   ;	// To store the Tx Size
@@ -101,6 +103,9 @@ int writeChar(SPI_Handler_t *ptrSPIHandler, int dataToSend );
 // Spi send and receive apis
 void SPI_Send(SPI_Handler_t *ptrSPIHandler, uint8_t TxBuffer) ;
 void SPI_Read(SPI_Handler_t *ptrSPIHandler , uint8_t RxBuffer ) ;
+
+void NSS_LOW(SPI_Handler_t *ptrSPIHandler);
+void NSS_HIGH(SPI_Handler_t *ptrSPIHandler);
 
 
 #endif /* SPIXDRIVER_H_ */

@@ -12,35 +12,102 @@
 #include "ExtiDriver.h"
 #include "SPIxDriver.h"
 #include "MAX7219Driver.h"
+#include "SysTickDriver.h"
 
 // Definición de los handlers necesarios
 GPIO_Handler_t 				handlerLED2		 			=	{0};
 GPIO_Handler_t				handlerCLK				 	=	{0};
-GPIO_Handler_t				handlerCS					=	{0};
+//GPIO_Handler_t				handlerCS					=	{0};
 GPIO_Handler_t				handlerMOSI					=	{0};
 
 // Timer encargado del Blinky
 BasicTimer_Handler_t 		handlerBlinkyTimer 			=	{0};
 
 //SPI
-SPI_Handler_t				handlerSPI					=	{0};
+//SPI_Handler_t				handlerSPI					=	{0};
 
 /*Prototipo de las funciones del main*/
-void SPI2_SendData(uint8_t data);
 void init_Hardware(void);
-uint8_t TxBuffer = 0x0;
+uint8_t TxBuffer = 0x3;
+uint8_t Tx2Buffer = 0x9;
+
+uint8_t reg = 0x0F;
+uint8_t data = 0x0;
+
 
 int main(void){
 	/*Inicializacion de todos los elementos del sistema*/
 	init_Hardware();
+	/* Inicializamos el MAX7219 */
+	MAX7219_Init();
 
 	while(1){
-		SPI_Send(&handlerSPI, TxBuffer);
+//		sendMatrix1(DIGIT1,0x3C);
+//		sendMatrix1(DIGIT2,0x18);
+//		sendMatrix1(DIGIT3,0x18);
+//		sendMatrix1(DIGIT4,0x18);
+//		sendMatrix1(DIGIT5,0x18);
+//		sendMatrix1(DIGIT6,0x3C);
+//
+//		sendMatrix2(DIGIT1,0x80);
+//		sendMatrix2(DIGIT2,0xC0);
+//		sendMatrix2(DIGIT3,0xE0);
+//		sendMatrix2(DIGIT4,0xF0);
+//		sendMatrix2(DIGIT5,0xF8);
+//		sendMatrix2(DIGIT6,0x70);
+//
+//		sendMatrix3(DIGIT1,0x01);
+//		sendMatrix3(DIGIT2,0x03);
+//		sendMatrix3(DIGIT3,0x07);
+//		sendMatrix3(DIGIT4,0x0F);
+//		sendMatrix3(DIGIT5,0x1F);
+//		sendMatrix3(DIGIT6,0x0E);
+//
+//		sendMatrix4(DIGIT1,0x7E);
+//		sendMatrix4(DIGIT2,0x7E);
+//		sendMatrix4(DIGIT3,0x66);
+//		sendMatrix4(DIGIT4,0x66);
+//		sendMatrix4(DIGIT5,0x66);
+//		sendMatrix4(DIGIT6,0x66);
+
+		sendMatrix1(DIGIT1,0x04);
+		sendMatrix1(DIGIT2,0x04);
+		sendMatrix1(DIGIT3,0x1C);
+		sendMatrix1(DIGIT4,0x04);
+		sendMatrix1(DIGIT5,0x04);
+		sendMatrix1(DIGIT6,0x7C);
+
+		sendMatrix2(DIGIT1,0x04);
+		sendMatrix2(DIGIT2,0x04);
+		sendMatrix2(DIGIT3,0x1C);
+		sendMatrix2(DIGIT4,0x04);
+		sendMatrix2(DIGIT5,0x04);
+		sendMatrix2(DIGIT6,0x7C);
+
+		sendMatrix3(DIGIT1,0x04);
+		sendMatrix3(DIGIT2,0x04);
+		sendMatrix3(DIGIT3,0x1C);
+		sendMatrix3(DIGIT4,0x04);
+		sendMatrix3(DIGIT5,0x04);
+		sendMatrix3(DIGIT6,0x7C);
+
+		sendMatrix4(DIGIT1,0x04);
+		sendMatrix4(DIGIT2,0x04);
+		sendMatrix4(DIGIT3,0x1C);
+		sendMatrix4(DIGIT4,0x04);
+		sendMatrix4(DIGIT5,0x04);
+		sendMatrix4(DIGIT6,0x7C);
+
+		delay_ms(2000);
+		clearDisplay();
 	} // FIN CICLO INFINITO
 } // FIN DEL MAIN
 
 
 void init_Hardware(void){
+	/* Configuramos el SysTick*/
+	config_SysTick_ms(SYSTICK_LOAD_VALUE_16MHz_1ms);
+
 	/*Configuracion del LED2 - PA5*/
 	handlerLED2.pGPIOx 										= GPIOA;
 	handlerLED2.GPIO_PinConfig.GPIO_PinNumber 				= PIN_5;
@@ -48,7 +115,6 @@ void init_Hardware(void){
 	handlerLED2.GPIO_PinConfig.GPIO_PinOPType				= GPIO_OTYPE_PUSHPULL;
 	handlerLED2.GPIO_PinConfig.GPIO_PinSpeed  				= GPIO_OSPEED_FAST;
 	handlerLED2.GPIO_PinConfig.GPIO_PinPuPdControl			= GPIO_PUPDR_NOTHING;
-
 	/*Cargar la configuracion del LED*/
 	GPIO_Config(&handlerLED2);
 	// Se inicia con el LED2 encendido
@@ -63,22 +129,6 @@ void init_Hardware(void){
 
 	// Cargando la configuracion del TIM2 en los registros
 	BasicTimer_Config(&handlerBlinkyTimer);
-
-	// Configuracion SPI
-	handlerSPI.ptrSPIx										= SPI2;
-	handlerSPI.SPIConfig.DeviceMode							= SPI_DEVICE_MODE_MASTER;
-	handlerSPI.SPIConfig.DirectionBusConfig					= SPI_BUS_CONFIG_TX;
-	handlerSPI.SPIConfig.BaudRatePrescaler					= SPI_SCLK_SPEED_DIV4;
-	handlerSPI.SPIConfig.DataSize							= SPI_DATA_SIZE_8BITS;
-	handlerSPI.SPIConfig.SPIMode							= SPI_MODE0;
-	handlerSPI.SPIConfig.FirstBit							= SPI_MSBFIRST;
-	handlerSPI.SPIConfig.NSS								= SPI_NSS_ENABLE;
-	handlerSPI.SPIConfig.TIMode								= SPI_TIMODE_DISABLE;
-	handlerSPI.SPIConfig.CRCCalculation						= SPI_CRC_DISABLE;
-	handlerSPI.SPIConfig.FrameFormat						= SPI_MOTOROLA_MODE;
-	handlerSPI.SPIConfig.State								= SPI_ENABLE;
-
-	SPI_Config(&handlerSPI);
 
 	// Configuración del puerto para el clock del encoder, se configura como
 	// una entrada digital simple, el encoder ya es pull-up [PB12]
@@ -105,28 +155,10 @@ void init_Hardware(void){
     //Cargando la configuracion en los registros
 	GPIO_Config(&handlerMOSI);
 
-//	// Configuración del botón del encoder PA12
-//	handlerCS.pGPIOx									= GPIOB;
-//	handlerCS.GPIO_PinConfig.GPIO_PinNumber				= PIN_12;
-//	handlerCS.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-//	handlerCS.GPIO_PinConfig.GPIO_PinOPType				= GPIO_OTYPE_PUSHPULL;
-//	handlerCS.GPIO_PinConfig.GPIO_PinSpeed				= GPIO_OSPEED_HIGH;
-//	handlerCS.GPIO_PinConfig.GPIO_PinPuPdControl		= GPIO_PUPDR_NOTHING;
-//	handlerCS.GPIO_PinConfig.GPIO_PinAltFunMode			= AF5;
-//    //Cargando la configuracion en los registros
-//	GPIO_Config(&handlerCS);
-
 }// Termina el init_Hardware
 
 // Blinky del led de estado
 void BasicTimer2_Callback(void){
-	handlerLED2.pGPIOx -> ODR ^= GPIO_ODR_OD5;
+	//handlerBlinkyPin.pGPIOx -> ODR ^= GPIO_ODR_OD5;
+	GPIOxTooglePin(&handlerLED2);
 }
-
-
-//void SPI2_SendData(uint8_t data)
-//{
-//    while (!(SPI2->SR & SPI_SR_TXE)) {} // Wait for TXE flag to be set
-//    SPI2->DR = data;                    // Write data to DR register
-//    while (SPI2->SR & SPI_SR_BSY) {}    // Wait for BSY flag to be reset
-//}
