@@ -59,6 +59,6 @@ void sendMatrix4(uint8_t addr, uint8_t data);
 void sendNO_OP(void);
 
 void setRow(uint8_t row);
-void setColumn(uint8_t col);
+void setColumn(uint8_t col, uint8_t* values, uint8_t module);
 
 #endif /* MAX7219DRIVER_H_ */

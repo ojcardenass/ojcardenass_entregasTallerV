@@ -28,11 +28,7 @@ BasicTimer_Handler_t 		handlerBlinkyTimer 			=	{0};
 
 /*Prototipo de las funciones del main*/
 void init_Hardware(void);
-uint8_t TxBuffer = 0x3;
-uint8_t Tx2Buffer = 0x9;
-
-uint8_t reg = 0x0F;
-uint8_t data = 0x0;
+uint8_t values[8] = {2,3,4,5,6,7,1,0};
 
 
 int main(void){
@@ -70,12 +66,15 @@ int main(void){
 //		sendMatrix4(DIGIT5,0x66);
 //		sendMatrix4(DIGIT6,0x66);
 
-		sendMatrix1(DIGIT1,0x04);
-		sendMatrix1(DIGIT2,0x04);
-		sendMatrix1(DIGIT3,0x1C);
-		sendMatrix1(DIGIT4,0x04);
-		sendMatrix1(DIGIT5,0x04);
-		sendMatrix1(DIGIT6,0x7C);
+		//8142241818244281
+		sendMatrix1(DIGIT0,0x81);
+		sendMatrix1(DIGIT1,0x42);
+		sendMatrix1(DIGIT2,0x24);
+		sendMatrix1(DIGIT3,0x18);
+		sendMatrix1(DIGIT4,0x18);
+		sendMatrix1(DIGIT5,0x24);
+		sendMatrix1(DIGIT6,0x42);
+		sendMatrix1(DIGIT7,0x81);
 
 		sendMatrix2(DIGIT1,0x04);
 		sendMatrix2(DIGIT2,0x04);
@@ -84,12 +83,14 @@ int main(void){
 		sendMatrix2(DIGIT5,0x04);
 		sendMatrix2(DIGIT6,0x7C);
 
-		sendMatrix3(DIGIT1,0x04);
-		sendMatrix3(DIGIT2,0x04);
-		sendMatrix3(DIGIT3,0x1C);
-		sendMatrix3(DIGIT4,0x04);
-		sendMatrix3(DIGIT5,0x04);
-		sendMatrix3(DIGIT6,0x7C);
+		sendMatrix3(DIGIT0,0x81);
+		sendMatrix3(DIGIT1,0x42);
+		sendMatrix3(DIGIT2,0x24);
+		sendMatrix3(DIGIT3,0x18);
+		sendMatrix3(DIGIT4,0x18);
+		sendMatrix3(DIGIT5,0x24);
+		sendMatrix3(DIGIT6,0x42);
+		sendMatrix3(DIGIT7,0x81);
 
 		sendMatrix4(DIGIT1,0x04);
 		sendMatrix4(DIGIT2,0x04);
@@ -97,9 +98,10 @@ int main(void){
 		sendMatrix4(DIGIT4,0x04);
 		sendMatrix4(DIGIT5,0x04);
 		sendMatrix4(DIGIT6,0x7C);
+//		setColumn(8,values,1);
 
-		delay_ms(2000);
-		clearDisplay();
+		delay_ms(10);
+		//clearDisplay();
 	} // FIN CICLO INFINITO
 } // FIN DEL MAIN
 

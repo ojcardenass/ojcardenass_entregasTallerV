@@ -125,17 +125,230 @@ void setRow(uint8_t row){
 	}
 }
 
-void setColumn(uint8_t col){
-	switch(col){
+
+
+void setColumn(uint8_t col, uint8_t* values, uint8_t module){
+	uint8_t col8[8] = {0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80};
+	uint8_t col7[8] = {0x40,0x40,0x40,0x40,0x40,0x40,0x40,0x40};
+	uint8_t col6[8] = {0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20};
+	uint8_t col5[8] = {0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10};
+	uint8_t col4[8] = {0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08};
+	uint8_t col3[8] = {0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04};
+	uint8_t col2[8] = {0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02};
+	uint8_t col1[8] = {0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01};
+	uint8_t digits[8] = {DIGIT0,DIGIT1,DIGIT2,DIGIT3,DIGIT4,DIGIT5,DIGIT6,DIGIT7};
+	uint8_t* cols[8]	= {col1,col2,col3,col4,col5,col6,col7,col8};
+
+	uint8_t digitBuffer[8] = {0};
+	for(uint8_t digi = 0; digi < 8; digi ++){
+		uint8_t colBuffer[8] = {0};
+		for(uint8_t ind = 0; ind < col; ind ++){
+			if(values[ind]>0 && digi < values[ind]){
+				colBuffer[digi] |= *cols[ind];
+				digitBuffer[digi] |= colBuffer[values[digi]];
+			}
+		}
+	switch(module){
 	case 1:
-		__NOP();
+		sendMatrix1(digits[digi], digitBuffer[digi]);
+		break;
 	default:
 		__NOP();
+	}
 
 	}
 
-}
 
+
+//	switch(module){
+//	case 1:
+//		switch(col){
+//		case 1:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col1[i]);
+//			}
+//			break;
+//		case 2:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col2[i]);
+//			}
+//			break;
+//		case 3:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col3[i]);
+//			}
+//			break;
+//		case 4:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col4[i]);
+//			}
+//			break;
+//		case 5:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col5[i]);
+//			}
+//			break;
+//		case 6:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col6[i]);
+//			}
+//			break;
+//		case 7:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col7[i]);
+//			}
+//			break;
+//		case 8:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix1(digits[i],col8[i]);
+//			}
+//			break;
+//		default:
+//			__NOP();
+//		}
+//		break;
+//	case 2:
+//		switch(col){
+//		case 1:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col1[i]);
+//			}
+//			break;
+//		case 2:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col2[i]);
+//			}
+//			break;
+//		case 3:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col3[i]);
+//			}
+//			break;
+//		case 4:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col4[i]);
+//			}
+//			break;
+//		case 5:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col5[i]);
+//			}
+//			break;
+//		case 6:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col6[i]);
+//			}
+//			break;
+//		case 7:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col7[i]);
+//			}
+//			break;
+//		case 8:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix2(digits[i],col8[i]);
+//			}
+//			break;
+//		default:
+//			__NOP();
+//		}
+//		break;
+//	case 3:
+//		switch(col){
+//		case 1:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col1[i]);
+//			}
+//			break;
+//		case 2:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col2[i]);
+//			}
+//			break;
+//		case 3:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col3[i]);
+//			}
+//			break;
+//		case 4:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col4[i]);
+//			}
+//			break;
+//		case 5:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col5[i]);
+//			}
+//			break;
+//		case 6:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col6[i]);
+//			}
+//			break;
+//		case 7:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col7[i]);
+//			}
+//			break;
+//		case 8:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix3(digits[i],col8[i]);
+//			}
+//			break;
+//		default:
+//			__NOP();
+//		}
+//		break;
+//	case 4:
+//		switch(col){
+//		case 1:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col1[i]);
+//			}
+//			break;
+//		case 2:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col2[i]);
+//			}
+//			break;
+//		case 3:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col3[i]);
+//			}
+//			break;
+//		case 4:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col4[i]);
+//			}
+//			break;
+//		case 5:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col5[i]);
+//			}
+//			break;
+//		case 6:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col6[i]);
+//			}
+//			break;
+//		case 7:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col7[i]);
+//			}
+//			break;
+//		case 8:
+//			for (uint8_t i = 0; i < value; i++){
+//				sendMatrix4(digits[i],col8[i]);
+//			}
+//			break;
+//		default:
+//			__NOP();
+//		}
+//		break;
+//	default:
+//		__NOP();
+//	}
+}
 
 void clearDisplay(void){
 	uint8_t i = 4;
@@ -148,7 +361,7 @@ void clearDisplay(void){
 		send_to_MAX7219(DIGIT5, 0x00);
 		send_to_MAX7219(DIGIT6, 0x00);
 		send_to_MAX7219(DIGIT7, 0x00);
-		delay_ms(50);
+		delay_ms(40);
 		i--;
 	}
 }

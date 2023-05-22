@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "stm32f4xx.h"
+#include "PLLDriver.h"
 
 #ifndef USARTXDRIVER_H_
 #define USARTXDRIVER_H_
@@ -19,6 +20,8 @@
 #define USART_BAUDRATE_9600		0
 #define USART_BAUDRATE_19200	1
 #define USART_BAUDRATE_115200	2
+
+#define CLKSPEED				getConfigPLL()/1000000 //MHz
 
 #define USART_DATASIZE_8BIT		0
 #define USART_DATASIZE_9BIT		1

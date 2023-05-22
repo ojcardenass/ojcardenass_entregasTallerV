@@ -127,35 +127,133 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 	}// fin del switch case
 
 	// 2.5 Configuracion del Baudrate (SFR USART_BRR)
-	/* Esta configuracion solo funciona con la frecuencia estandar del reloj del micro
-	 * 16 MHz, la cual se configura por defecto en ambos Buses APB1 y APB2 */
-	// Ver tabla de valores (Tabla 75), Frec = 16MHz, overr = 0;
-	if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
-		// El valor a cargar es 104.1875 -> Mantiza = 104,fraction = 0.1875
-		// Mantiza = 104 = 0x68, fraction = 16 * 0.1875 = 3
-		// Valor a cargar 0x0683
-		// Configurando el Baudrate generator para una velocidad de 9600bps
-		ptrUsartHandler->ptrUSARTx->BRR = 0x0683;
+	switch (CLKSPEED) {
+		case 100:
+			if(ptrUsartHandler->ptrUSARTx == USART2){
+				/* Esta configuracion para la frecuencia del bus APB1 (50 MHz)*/
+				if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
+					// Configurando el Baudrate generator para una velocidad de 9600bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x1458;
+				}
+
+				else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
+					//Configurando el Baudrate generator para una velocidad de 19200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0xA2C;
+				}
+
+				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
+					//Configurando el Baudrate generator para una velocidad de 115200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x1B2;
+				}
+				else{
+					__NOP();
+				}
+			} // Fin IF USART2
+			else{
+				/* Esta configuracion solo funciona con la frecuencia del reloj del micro
+				 * 100 MHz para el buses APB2 */
+				if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
+					// Configurando el Baudrate generator para una velocidad de 9600bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x28B1;
+				}
+
+				else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
+					//Configurando el Baudrate generator para una velocidad de 19200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x1458;
+				}
+
+				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
+					// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
+					// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
+					// Valor a cargar 0x811
+					//Configurando el Baudrate generator para una velocidad de 115200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x364;
+				}
+				else{
+					__NOP();
+				}
+			}
+			break;
+		case 80:
+			if(ptrUsartHandler->ptrUSARTx == USART2){
+				/* Esta configuracion para la frecuencia del bus APB1 (40 MHz)*/
+				if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
+					// Configurando el Baudrate generator para una velocidad de 9600bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x1047;
+				}
+
+				else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
+					//Configurando el Baudrate generator para una velocidad de 19200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x823;
+				}
+
+				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
+					//Configurando el Baudrate generator para una velocidad de 115200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x15B;
+				}
+				else{
+					__NOP();
+				}
+			} // Fin IF USART2
+			else{
+				/* Esta configuracion solo funciona con la frecuencia del reloj del micro
+				 * 80 MHz para el buses APB2 */
+				if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
+					// Configurando el Baudrate generator para una velocidad de 9600bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x208D;
+				}
+
+				else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
+					//Configurando el Baudrate generator para una velocidad de 19200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x1047;
+				}
+
+				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
+					// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
+					// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
+					// Valor a cargar 0x811
+					//Configurando el Baudrate generator para una velocidad de 115200 bps
+					ptrUsartHandler->ptrUSARTx->BRR = 0x2B6;
+				}
+				else{
+					__NOP();
+				}
+			}
+			break;
+
+		default:
+			/* Esta configuracion solo funciona con la frecuencia estandar del reloj del micro
+			 * 16 MHz, la cual se configura por defecto en ambos Buses APB1 y APB2 */
+			// Ver tabla de valores (Tabla 75), Frec = 16MHz, overr = 0;
+			if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_9600){
+				// El valor a cargar es 104.1875 -> Mantiza = 104,fraction = 0.1875
+				// Mantiza = 104 = 0x68, fraction = 16 * 0.1875 = 3
+				// Valor a cargar 0x0683
+				// Configurando el Baudrate generator para una velocidad de 9600bps
+				ptrUsartHandler->ptrUSARTx->BRR = 0x0683;
+			}
+
+			else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
+				// El valor a cargar es 52.0625 -> Mantiza = 52,fraction = 0.0625
+				// Mantiza = 52 = 0x34, fraction = 16 * 0.0625 = 1
+				// Valor a cargar 0x341
+				//Configurando el Baudrate generator para una velocidad de 19200 bps
+				ptrUsartHandler->ptrUSARTx->BRR = 0x341;
+			}
+
+			else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
+				// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
+				// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
+				// Valor a cargar 0x811
+				//Configurando el Baudrate generator para una velocidad de 115200 bps
+				ptrUsartHandler->ptrUSARTx->BRR = 0x8B;
+			}
+			else{
+				__NOP();
+			}
+			break;
 	}
 
-	else if (ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_19200) {
-		// El valor a cargar es 52.0625 -> Mantiza = 52,fraction = 0.0625
-		// Mantiza = 52 = 0x34, fraction = 16 * 0.0625 = 1
-		// Valor a cargar 0x341
-		//Configurando el Baudrate generator para una velocidad de 19200 bps
-		ptrUsartHandler->ptrUSARTx->BRR = 0x341;
-	}
-
-	else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
-		// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
-		// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
-		// Valor a cargar 0x811
-		//Configurando el Baudrate generator para una velocidad de 115200 bps
-		ptrUsartHandler->ptrUSARTx->BRR = 0x8B;
-	}
-	else{
-		__NOP();
-	}
 
 	// 2.6 Configuramos el modo: TX only, RX only, RXTX, disable
 	switch(ptrUsartHandler->USART_Config.USART_mode){
