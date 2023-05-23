@@ -9,6 +9,7 @@
 #define I2CXDRIVER_H_
 
 #include <stm32f4xx.h>
+#include "PLLDriver.h"
 
 #define I2C_WRITE_DATA					0
 #define I2C_READ_DATA					1

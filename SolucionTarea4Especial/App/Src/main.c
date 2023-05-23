@@ -15,6 +15,7 @@
 #include "ExtiDriver.h"
 #include "USARTxDriver.h"
 #include "PwmDriver.h"
+#include "SysTickDriver.h"
 #include "PLLDriver.h"
 
 GPIO_Handler_t			handlerBlinkyPin		=	{0};
@@ -28,14 +29,17 @@ GPIO_Handler_t			handlerPinRX			=	{0};
 USART_Handler_t			usart2Comm				=	{0};
 uint8_t 				sendMsg 				= 	0;
 uint8_t					usart2DataReceived		=	0;
+uint32_t				usart2DataTransmitted	=	0;
 
 /* Elementos para el PWM*/
 GPIO_Handler_t			handlerPinPwmChannel	=	{0};
 PWM_Handler_t			handlerSignalPWM		= 	{0};
 
 uint16_t duttyValue = 1500;
+/* Frecuencia del mico*/
+int clockSpeed = SPEED_80MHz;
 
-uint32_t actualClockSpeed = 0;
+uint32_t clock = 0;
 
 char	bufferData[64] = "Hola, voy a dominar el mundo :) .";
 char	bufferMsg[64] = {0};
@@ -46,31 +50,57 @@ int main(void){
     /* Inicializamos todos los elementos del sistema */
 	init_Hardware();
 
-	actualClockSpeed = getConfigPLL();
+	clock = getConfigPLL();
 
 	/* Loop forever */
 	while(1){
 
-		if(usart2DataReceived != '\0'){
+		if(sendMsg > 4){
 
-			if(usart2DataReceived == 'D'){
-				// DOWN
-				duttyValue -= 10;
-				updateDuttyCycle(&handlerSignalPWM, duttyValue);
-			}
+			sendChar(&usart2Comm, 'G');
 
-			else if(usart2DataReceived == 'U'){
-				// UP
-				duttyValue += 10;
-				updateDuttyCycle(&handlerSignalPWM, duttyValue);
-			}
 
-			sprintf(bufferMsg, "Dutty = %u \n",(unsigned int) duttyValue);
-			writeMsg(&usart2Comm, bufferMsg);
+			//disableTXInterrupt(&usart2Comm);
 
-			/* Cambiamos el estado del elemento que controla la entrada*/
-			usart2DataReceived = '\0';
+//			writeMsg(&usart2Comm, bufferData);
+//
+//			// Crea el string y lo almacena en el arreglo bufferMsg
+//			sprintf(bufferMsg, "Valor de sendMsg = %d \n", sendMsg);
+//			writeMsg(&usart2Comm, bufferMsg);
+
+			sendMsg = 0;
+
 		}
+//		if(usart2DataReceived != '\0'){
+//			/* Echo, envia lo regreso lo que recibe*/
+//			//writeChar(&usart2Comm, usart2DataReceived);
+//			/* Se crea un mensaje para el caracter recibido*/
+//			sprintf(bufferMsg, "Recibido Char = %c \n", usart2DataReceived);
+//			writeMsg(&usart2Comm, bufferMsg);
+//
+//			usart2DataReceived = '\0';
+//		}
+
+//		if(usart2DataReceived != '\0'){
+//
+//			if(usart2DataReceived == 'D'){
+//				// DOWN
+//				duttyValue -= 10;
+//				updateDuttyCycle(&handlerSignalPWM, duttyValue);
+//			}
+//
+//			else if(usart2DataReceived == 'U'){
+//				// UP
+//				duttyValue += 10;
+//				updateDuttyCycle(&handlerSignalPWM, duttyValue);
+//			}
+//
+//			sprintf(bufferMsg, "Dutty = %u \n",(unsigned int) duttyValue);
+//			writeMsg(&usart2Comm, bufferMsg);
+//
+//			/* Cambiamos el estado del elemento que controla la entrada*/
+//			usart2DataReceived = '\0';
+//		}
 	}
 	return 0;
 }
@@ -78,7 +108,8 @@ int main(void){
 /* Funcion encargada de la inicializacion del sistema*/
 void init_Hardware(void){
 
-	configPLL(SPEED_100MHz);
+	configPLL(clockSpeed);
+	config_SysTick_ms(CLKSPEED);
 
 	// Configurando el pin A5 para el Led blinky
 	handlerBlinkyPin.pGPIOx 								= GPIOA;
@@ -93,7 +124,7 @@ void init_Hardware(void){
 	//Se configura el Timer 2 para que funcione con el blinky
 	handlerBlinkyTimer.ptrTIMx 								= TIM2;
 	handlerBlinkyTimer.TIMx_Config.TIMx_mode				= BTIMER_MODE_UP;
-	handlerBlinkyTimer.TIMx_Config.TIMx_speed				= BTIMER_SPEED_100MHz_100us;
+	handlerBlinkyTimer.TIMx_Config.TIMx_speed				= BTIMER_SPEED_100us;
 	handlerBlinkyTimer.TIMx_Config.TIMx_period				= 2500;
 	handlerBlinkyTimer.TIMx_Config.TIMx_interruptEnable		= 1;
 	BasicTimer_Config(&handlerBlinkyTimer);
@@ -112,15 +143,15 @@ void init_Hardware(void){
 
 	/* Configuracion para la comunicacion serial USART2*/
 	handlerPinTX.pGPIOx										= GPIOA;
-	handlerPinTX.GPIO_PinConfig.GPIO_PinNumber				= PIN_11;
+	handlerPinTX.GPIO_PinConfig.GPIO_PinNumber				= PIN_2;
 	handlerPinTX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-	handlerPinTX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF8;
+	handlerPinTX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
 	GPIO_Config(&handlerPinTX);
 
 	handlerPinRX.pGPIOx										= GPIOA;
-	handlerPinRX.GPIO_PinConfig.GPIO_PinNumber				= PIN_12;
+	handlerPinRX.GPIO_PinConfig.GPIO_PinNumber				= PIN_3;
 	handlerPinRX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-	handlerPinRX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF8;
+	handlerPinRX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
 	GPIO_Config(&handlerPinRX);
 
 	usart2Comm.ptrUSARTx									= USART2;
@@ -130,30 +161,30 @@ void init_Hardware(void){
 	usart2Comm.USART_Config.USART_stopbits					= USART_STOPBIT_1;
 	usart2Comm.USART_Config.USART_mode						= USART_MODE_RXTX;
 	usart2Comm.USART_Config.USART_interruptionEnableRx		= USART_RX_INTERRUPT_ENABLE;
-	usart2Comm.USART_Config.USART_interruptionEnableTx		= USART_TX_INTERRUPT_DISABLE;
+	usart2Comm.USART_Config.USART_interruptionEnableTx		= USART_TX_INTERRUPT_ENABLE;
 	USART_Config(&usart2Comm);
 
-	/* Configuramos el PWM*/
-	handlerPinPwmChannel.pGPIOx								= GPIOC;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinNumber		= PIN_7;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinMode		= GPIO_MODE_ALTFN;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinOPType		= GPIO_OTYPE_PUSHPULL;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinPuPdControl	= GPIO_PUPDR_NOTHING;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinSpeed		= GPIO_OSPEED_FAST;
-	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinAltFunMode	= AF2;
-	GPIO_Config(&handlerPinPwmChannel);
-
-	/* Configurando el timer para el que genere el PWM*/
-	handlerSignalPWM.ptrTIMx								= TIM3;
-	handlerSignalPWM.config.channel							= PWM_CHANNEL_2;
-	handlerSignalPWM.config.duttyCicle						= duttyValue;
-	handlerSignalPWM.config.periodo							= 20000;
-	handlerSignalPWM.config.prescaler						= 16;
-	pwm_Config(&handlerSignalPWM);
-
-	/* Activamos la señal*/
-	enableOutput(&handlerSignalPWM);
-	startPwmSignal(&handlerSignalPWM);
+//	/* Configuramos el PWM*/
+//	handlerPinPwmChannel.pGPIOx								= GPIOC;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinNumber		= PIN_7;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinMode		= GPIO_MODE_ALTFN;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinOPType		= GPIO_OTYPE_PUSHPULL;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinPuPdControl	= GPIO_PUPDR_NOTHING;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinSpeed		= GPIO_OSPEED_FAST;
+//	handlerPinPwmChannel.GPIO_PinConfig.GPIO_PinAltFunMode	= AF2;
+//	GPIO_Config(&handlerPinPwmChannel);
+//
+//	/* Configurando el timer para el que genere el PWM*/
+//	handlerSignalPWM.ptrTIMx								= TIM3;
+//	handlerSignalPWM.config.channel							= PWM_CHANNEL_2;
+//	handlerSignalPWM.config.duttyCicle						= duttyValue;
+//	handlerSignalPWM.config.periodo							= 20000;
+//	handlerSignalPWM.config.prescaler						= 16;
+//	pwm_Config(&handlerSignalPWM);
+//
+//	/* Activamos la señal*/
+//	enableOutput(&handlerSignalPWM);
+//	startPwmSignal(&handlerSignalPWM);
 }
 
 /* Callback del TIM2 par hacer un blinky con el led de estado*/
@@ -172,5 +203,11 @@ void callback_extInt13(void){
  * el puerto del USART2*/
 void usart2Rx_Callback (void){
 	usart2DataReceived = getRxData();
+}
+
+/* Esta funcion se ejecuta cada vez que un caracter es transmitido por
+ * el puerto del USART2*/
+void usart2Tx_Callback (void){
+	usart2DataTransmitted ++;
 }
 

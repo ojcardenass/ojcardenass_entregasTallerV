@@ -24,6 +24,7 @@ void configPLL(int mcuspeed){
 		FLASH -> ACR |= FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_PRFTEN;
 		FLASH -> ACR &= ~ FLASH_ACR_LATENCY;
 		FLASH -> ACR |= FLASH_ACR_LATENCY_3WS;
+		/* Por defecto la fuente para el PLL es el HSI de 16MHz*/
 		// m = 8, 16 MHz / 8 = 2 MHz
 		RCC -> PLLCFGR &= ~ RCC_PLLCFGR_PLLM;
 		RCC -> PLLCFGR |= RCC_PLLCFGR_PLLM_3;
@@ -116,11 +117,13 @@ uint32_t getConfigPLL(void) {
     // Se leen y se extraen los valores de configuracion del
     uint32_t pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
     uint32_t plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
-    //uint32_t pllp = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos;
 
     // Se calcula el valor actual del clock
-    systemClock = ((HSE_VALUE / pllm) * plln);
-
-
+    if(pllm == 16){
+    	systemClock = (HSI_VALUE);
+    }
+    else{
+    	systemClock = ((HSI_VALUE / pllm) * plln) / 2;
+    }
     return systemClock;
 }

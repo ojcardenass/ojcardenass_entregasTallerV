@@ -15,6 +15,7 @@
  */
 
 uint8_t	auxRxData	=	0;
+uint8_t auxTx		= 	0;
 
 void USART_Config(USART_Handler_t *ptrUsartHandler){
 	/* 0. Desactivamos las interrupciones globales */
@@ -163,9 +164,6 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 				}
 
 				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
-					// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
-					// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
-					// Valor a cargar 0x811
 					//Configurando el Baudrate generator para una velocidad de 115200 bps
 					ptrUsartHandler->ptrUSARTx->BRR = 0x364;
 				}
@@ -209,9 +207,6 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 				}
 
 				else if(ptrUsartHandler->USART_Config.USART_baudrate == USART_BAUDRATE_115200){
-					// El valor a cargar es 8.6875 -> Mantiza = 8,fraction = 0.6875
-					// Mantiza = 8 = 0x8, fraction = 16 * 0.6875 = 11 = B
-					// Valor a cargar 0x811
 					//Configurando el Baudrate generator para una velocidad de 115200 bps
 					ptrUsartHandler->ptrUSARTx->BRR = 0x2B6;
 				}
@@ -297,63 +292,31 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 
 	// 2.8 Verificamos la configuración de las interrupciones
 	// 2.8a Interrupción por recepción
-	if (ptrUsartHandler -> USART_Config.USART_interruptionEnableRx == USART_RX_INTERRUPT_ENABLE){
-		// Como está activada debemos configurar la interrupción por recepción
-		// Debemos activar la interrupción RX en la configuración del USART
-		ptrUsartHandler -> ptrUSARTx -> CR1 |= USART_CR1_RXNEIE;
-		/*	Debemos matricular la interrupción en el NVIC
-		 *  Lo debemos hacer para cada una de las posibles opciones que tengamos (USART1, USART2, USART6
-		 */
-		if (ptrUsartHandler -> ptrUSARTx == USART1){
-			__NVIC_EnableIRQ(USART1_IRQn);
-		}
-
-		else if (ptrUsartHandler -> ptrUSARTx == USART2){
-			__NVIC_EnableIRQ(USART2_IRQn);
-		}
-
-		else if (ptrUsartHandler -> ptrUSARTx == USART6){
-			__NVIC_EnableIRQ(USART6_IRQn);
-		}
-		else{
-			__NOP();
-		}
-	}
-	// Si no hay interrupcion por Recepcion, se desactiva la posicion del registro
-	else if (ptrUsartHandler -> USART_Config.USART_interruptionEnableRx == USART_RX_INTERRUPT_DISABLE){
-		ptrUsartHandler -> ptrUSARTx -> CR1 &= ~ USART_CR1_RXNEIE;
+	if(ptrUsartHandler->USART_Config.USART_interruptionEnableRx == USART_RX_INTERRUPT_ENABLE){
+		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_RXNEIE;
+		ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_RXNEIE;
 	}
 	else{
-		__NOP();
+		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_RXNEIE;
 	}
+	// 2.8 b Interrupción por transmisión
+//	if(ptrUsartHandler->USART_Config.USART_interruptionEnableTx == USART_TX_INTERRUPT_ENABLE){
+//		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
+//		ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
+//	}
+//	else{
+//		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
+//	}
 
-	// 2.8b Interrupción por transmision
-	if (ptrUsartHandler -> USART_Config.USART_interruptionEnableTx == USART_TX_INTERRUPT_ENABLE){
-		// Como está activada debemos configurar la interrupción por transmisión
-		// Debemos activar la interrupción TX en la configuración del USART
-		ptrUsartHandler -> ptrUSARTx -> CR1 |= USART_CR1_TXEIE;
-		/*	Debemos matricular la interrupción en el NVIC
-		 *  Lo debemos hacer para cada una de las posibles opciones que tengamos (USART1, USART2, USART6
-		 */
-		if (ptrUsartHandler -> ptrUSARTx == USART1){
-			__NVIC_EnableIRQ(USART1_IRQn);
-		}
-
-		else if (ptrUsartHandler -> ptrUSARTx == USART2){
-			__NVIC_EnableIRQ(USART2_IRQn);
-		}
-
-		else if (ptrUsartHandler -> ptrUSARTx == USART6){
-			__NVIC_EnableIRQ(USART6_IRQn);
-		}
+	// Matriculamos en el NVIC para el USART correspondiente
+	if(ptrUsartHandler->ptrUSARTx == USART1){
+		__NVIC_EnableIRQ(USART1_IRQn);
 	}
-
-	// Si no hay interrupcion por Transmision, se desactiva la posicion del registro
-	else if (ptrUsartHandler -> USART_Config.USART_interruptionEnableTx == USART_TX_INTERRUPT_DISABLE){
-		ptrUsartHandler -> ptrUSARTx -> CR1 &= ~ USART_CR1_TXEIE;
- 	}
-	else{
-		__NOP();
+	else if(ptrUsartHandler->ptrUSARTx == USART2){
+		__NVIC_EnableIRQ(USART2_IRQn);
+	}
+	else if(ptrUsartHandler->ptrUSARTx == USART6){
+		__NVIC_EnableIRQ(USART6_IRQn);
 	}
 
 	// 2.9 Activamos el modulo serial.
@@ -388,6 +351,23 @@ void writeMsg(USART_Handler_t *ptrUsartHandler, char *msgToSend){
 		msgToSend++;
 	}
 }
+void enableTXInterrupt(USART_Handler_t *ptrUsartHandler){
+		ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
+}
+
+void disableTXInterrupt(USART_Handler_t *ptrUsartHandler){
+		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
+
+}
+
+/* Funcion para enviar un solo char con IT */
+char sendChar(USART_Handler_t *ptrUsartHandler, char dataToSend){
+	disableTXInterrupt(ptrUsartHandler);
+	ptrUsartHandler->ptrUSARTx->DR = dataToSend;
+	enableTXInterrupt(ptrUsartHandler);
+
+	return dataToSend;
+}
 
 /* Funcion para leer un solo char */
 char readChar(USART_Handler_t *ptrUsartHandler){
@@ -406,12 +386,18 @@ uint8_t getRxData (void){
  *  Acá deben estar todas las interrupciones asociadas: TX, RX, PE...
  */
 
+
 /* Interrupciones asociadas a RX*/
 void USART1_IRQHandler (void){
 	// Evaluamos si la interrupción que se dió es por RX
 	if (USART1 -> SR & USART_SR_RXNE){
 		auxRxData = (uint8_t) USART1 -> DR;
 		usart1Rx_Callback();
+		while (!(USART1->SR & USART_SR_TC));
+	}
+	// Evaluamos si la interrupción que se dió es por TX
+	else if ((USART1 -> SR & USART_SR_TXE)){
+		usart1Tx_Callback();
 	}
 }
 
@@ -420,6 +406,11 @@ void USART2_IRQHandler (void){
 	if (USART2 -> SR & USART_SR_RXNE){
 		auxRxData = (uint8_t) USART2 -> DR;
 		usart2Rx_Callback();
+		while (!(USART2->SR & USART_SR_TC));
+	}
+	// Evaluamos si la interrupción que se dió es por TX
+	else if ((USART2 -> SR & USART_SR_TXE)){
+		usart2Tx_Callback();
 	}
 }
 
@@ -428,26 +419,34 @@ void USART6_IRQHandler (void){
 	if (USART6 -> SR & USART_SR_RXNE){
 		auxRxData = (uint8_t) USART6 -> DR;
 		usart6Rx_Callback();
+		while (!(USART6->SR & USART_SR_TC));
+	}
+	// Evaluamos si la interrupción que se dió es por TX
+	else if ((USART6 -> SR & USART_SR_TXE)){
+		usart6Tx_Callback();
 	}
 }
 
 __attribute__((weak)) void usart1Rx_Callback(void){
-	  /* NOTE : This function should not be modified, when the callback is needed,
-	            the BasicTimerX_Callback could be implemented in the main file
-	   */
 	__NOP();
 }
 
 __attribute__((weak)) void usart2Rx_Callback(void){
-	  /* NOTE : This function should not be modified, when the callback is needed,
-	            the BasicTimerX_Callback could be implemented in the main file
-	   */
 	__NOP();
 }
 
 __attribute__((weak)) void usart6Rx_Callback(void){
-	  /* NOTE : This function should not be modified, when the callback is needed,
-	            the BasicTimerX_Callback could be implemented in the main file
-	   */
+	__NOP();
+}
+
+__attribute__((weak)) void usart1Tx_Callback(void){
+	__NOP();
+}
+
+__attribute__((weak)) void usart2Tx_Callback(void){
+	__NOP();
+}
+
+__attribute__((weak)) void usart6Tx_Callback(void){
 	__NOP();
 }

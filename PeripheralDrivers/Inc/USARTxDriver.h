@@ -21,8 +21,6 @@
 #define USART_BAUDRATE_19200	1
 #define USART_BAUDRATE_115200	2
 
-#define CLKSPEED				getConfigPLL()/1000000 //MHz
-
 #define USART_DATASIZE_8BIT		0
 #define USART_DATASIZE_9BIT		1
 
@@ -85,10 +83,21 @@ void USART_Config(USART_Handler_t *ptrUsartHandler);
 int writeChar(USART_Handler_t *ptrUsartHandler, char dataToSend );
 void writeMsg (USART_Handler_t *ptrUsartHandler, char *msgToSend);
 
+char sendChar(USART_Handler_t *ptrUsartHandler, char dataToSend);
+char readChar(USART_Handler_t *ptrUsartHandler);
+
 uint8_t getRxData (void);
+
+void enableTXInterrupt(USART_Handler_t *ptrUsartHandler);
+void disableTXInterrupt(USART_Handler_t *ptrUsartHandler);
+
 
 void usart2Rx_Callback (void);
 void usart1Rx_Callback (void);
 void usart6Rx_Callback (void);
+void usart1Tx_Callback(void);
+void usart2Tx_Callback(void);
+void usart6Tx_Callback(void);
+
 
 #endif /* USARTXDRIV ER_H_ */

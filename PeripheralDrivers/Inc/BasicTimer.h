@@ -9,22 +9,27 @@
 #define INC_BASICTIMER_H_
 
 #include "stm32f4xx.h"
+#include "PLLDriver.h"
 
 #define BTIMER_MODE_UP		0
 #define BTIMER_MODE_DOWN	1
 
-#define BTIMER_SPEED_10us	160
-#define BTIMER_SPEED_100us	1600
-#define BTIMER_SPEED_1ms	16000
+#define BTIMER_SPEED_10us	CLKSPEED * 10
+#define BTIMER_SPEED_100us	CLKSPEED * 100
+#define BTIMER_SPEED_1ms	CLKSPEED * 1000
 
-// El valor maximo del PSC es 65536
-#define BTIMER_SPEED_100MHz_10us	1000 //1000
-#define BTIMER_SPEED_100MHz_100us	10000
-#define BTIMER_SPEED_100MHz_1ms		100000 //100000
-
-#define BTIMER_SPEED_80MHz_10us		800
-#define BTIMER_SPEED_80MHz_100us	8000
-#define BTIMER_SPEED_80MHz_1ms		80000 //80000
+//#define BTIMER_SPEED_10us	160
+//#define BTIMER_SPEED_100us	1600
+//#define BTIMER_SPEED_1ms	16000
+//
+//// El valor maximo del PSC es 65536
+//#define BTIMER_SPEED_100MHz_10us	1000 //1000
+//#define BTIMER_SPEED_100MHz_100us	10000
+//#define BTIMER_SPEED_100MHz_1ms		100000 //100000
+//
+//#define BTIMER_SPEED_80MHz_10us		800
+//#define BTIMER_SPEED_80MHz_100us	8000
+//#define BTIMER_SPEED_80MHz_1ms		80000 //80000
 
 #define BTIMER_INTERRUPT_ENABLE		1
 #define BTIMER_INTERRUPT_DISABLE 	0

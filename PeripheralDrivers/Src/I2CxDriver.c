@@ -39,7 +39,12 @@ void i2c_config (I2C_Handler_t *ptrHandlerI2C){
 	/* 3. Indicamos cual es la velocidad del reloj principal, que es la señal utilizada
 	 *    por el periférico para generar la señal de reloj para el bus I2C */
 	ptrHandlerI2C -> ptrI2Cx -> CR2 &= ~ (0b111111 << I2C_CR2_FREQ_Pos);
-	ptrHandlerI2C -> ptrI2Cx -> CR2 |= (MAIN_CLOCK_16_MHz_FOR_I2C << I2C_CR2_FREQ_Pos);
+	if(CLKSPEED == 16){
+		ptrHandlerI2C -> ptrI2Cx -> CR2 |= (MAIN_CLOCK_16_MHz_FOR_I2C << I2C_CR2_FREQ_Pos);
+	}
+	else{
+		ptrHandlerI2C -> ptrI2Cx -> CR2 |= ((CLKSPEED / 2) << I2C_CR2_FREQ_Pos);
+	}
 
 	/* 4. Configuramos el modo I2C en el que el sistema funciona
 	 * En esta configuramción se incluye también la velocidad del reloj
