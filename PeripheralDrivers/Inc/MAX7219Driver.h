@@ -11,7 +11,7 @@
 
 #ifndef MAX7219DRIVER_H_
 #define MAX7219DRIVER_H_
-
+/* Definicion de las direcciones y valores posibles*/
 //ADDRESSES
 #define NO_OP			0x00
 //DIGITOS
@@ -29,7 +29,6 @@
 #define SCAN_LIMIT		0x0B
 #define SHUTDOWN		0x0C
 #define DISPLAY_TEST	0x0F
-
 
 //SHUTDOWN
 #define SHTDOWN			0
@@ -58,7 +57,7 @@ void sendMatrix3(uint8_t addr, uint8_t data);
 void sendMatrix4(uint8_t addr, uint8_t data);
 void sendNO_OP(void);
 
-void setRow(uint8_t row);
-void setColumn(uint8_t col, uint8_t* values, uint8_t module);
+void rowOut(uint8_t* values, uint8_t* ledBuffer);
+void setColumnsModx(uint8_t* values, uint8_t module);
 
 #endif /* MAX7219DRIVER_H_ */

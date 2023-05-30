@@ -14,8 +14,10 @@
  * del periferico que se está utilizando.
  */
 
-uint8_t	auxRxData	=	0;
-uint8_t auxTx		= 	0;
+uint8_t	auxRxData			= 0;
+uint8_t charOrString 		= 0; 	// Variable que guarda el modo, 0 es carácter, 1 es string
+char dataUSARTchar 			= '\0'; // Variable que guarda el carácter a enviar por interrupción
+char *ptrdataUSARTstring	= NULL; // Puntero que guarda la primera posición del string a enviar por interrupción
 
 void USART_Config(USART_Handler_t *ptrUsartHandler){
 	/* 0. Desactivamos las interrupciones globales */
@@ -299,14 +301,7 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 	else{
 		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_RXNEIE;
 	}
-	// 2.8 b Interrupción por transmisión
-//	if(ptrUsartHandler->USART_Config.USART_interruptionEnableTx == USART_TX_INTERRUPT_ENABLE){
-//		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
-//		ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
-//	}
-//	else{
-//		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
-//	}
+
 
 	// Matriculamos en el NVIC para el USART correspondiente
 	if(ptrUsartHandler->ptrUSARTx == USART1){
@@ -330,123 +325,164 @@ void USART_Config(USART_Handler_t *ptrUsartHandler){
 	__enable_irq();
 }
 
-/* funcion para escribir un solo char */
+/** Función para escribir un solo char */
 int writeChar(USART_Handler_t *ptrUsartHandler, char dataToSend ){
-	/* Verificar si el dato se transmitio = 1,si no se transmitio = 0
-	 * si esta ocupado un registro es 0 y el otro es 1, lo que hace que
-	 * ! = True y & = True lo que hace que entre al ciclo y no haga nada
-	 * */
 	while( !(ptrUsartHandler->ptrUSARTx->SR & USART_SR_TXE)){
 		__NOP();
 	}
-	/*Si esta libre se manda el char*/
 	ptrUsartHandler->ptrUSARTx->DR = dataToSend;
 	return dataToSend;
 }
 
-/* Función para escribir un mensaje */
-void writeMsg(USART_Handler_t *ptrUsartHandler, char *msgToSend){
-	while(*msgToSend != '\0'){
-		writeChar(ptrUsartHandler, *msgToSend);
-		msgToSend++;
+/** Función para escribir un solo char por interrupción */
+int writeCharTXE(USART_Handler_t *ptrUsartHandler, char dataToSend ){
+	dataUSARTchar = dataToSend;
+	charOrString = 0;
+	ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
+	return dataToSend;
+}
+
+/** Función para escribir todo un string */
+void writeMsg(USART_Handler_t *ptrUsartHandler, char *messageToSend){
+	int i = 0;
+	while(messageToSend[i] != '\0'){
+		writeChar(ptrUsartHandler, messageToSend[i]);
+		i++;
 	}
 }
-void enableTXInterrupt(USART_Handler_t *ptrUsartHandler){
-		ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
+
+/** Función para escribir todo un string por interrupcíón */
+void writeMsgTXE(USART_Handler_t *ptrUsartHandler, char *messageToSend){
+	ptrdataUSARTstring = messageToSend;
+	charOrString = 1;
+	ptrUsartHandler->ptrUSARTx->CR1 |= USART_CR1_TXEIE;
 }
 
-void disableTXInterrupt(USART_Handler_t *ptrUsartHandler){
-		ptrUsartHandler->ptrUSARTx->CR1 &= ~USART_CR1_TXEIE;
-
+/** Función para cuando hay interrupción Tx en Usart1, cargue carácter en el DR y desactive */
+void usart1Tx_Char(void){
+	USART1->DR = dataUSARTchar;
+	USART1->CR1 &= ~USART_CR1_TXEIE;
 }
 
-/* Funcion para enviar un solo char con IT */
-char sendChar(USART_Handler_t *ptrUsartHandler, char dataToSend){
-	disableTXInterrupt(ptrUsartHandler);
-	ptrUsartHandler->ptrUSARTx->DR = dataToSend;
-	enableTXInterrupt(ptrUsartHandler);
-
-	return dataToSend;
+/** Función para cuando hay interrupción Tx en Usart2, cargue carácter en el DR y desactive */
+void usart2Tx_Char(void){
+	USART2->DR = dataUSARTchar;
+	USART2->CR1 &= ~USART_CR1_TXEIE;
 }
 
-/* Funcion para leer un solo char */
-char readChar(USART_Handler_t *ptrUsartHandler){
-	// Leemos el valor recibido en el data register
-	char dataToRead;
-	dataToRead = ((char) (ptrUsartHandler -> ptrUSARTx -> DR));
-	return dataToRead;
+/** Función para cuando hay interrupción Tx en Usart6, cargue carácter en el DR y desactive */
+void usart6Tx_Char(void){
+	USART6->DR = dataUSARTchar;
+	USART6->CR1 &= ~USART_CR1_TXEIE;
 }
-/* Lectura del caracter que llega por la interfaz serial*/
-uint8_t getRxData (void){
+
+/** Función para cuando hay interrupción Tx en Usart1, cargue string en el DR y desactive */
+void usart1Tx_String(void){
+	int j = 0;
+	while(ptrdataUSARTstring[j] != '\0'){
+		USART1->DR = ptrdataUSARTstring[j];
+		j++;
+	}
+	USART1->CR1 &= ~USART_CR1_TXEIE;
+}
+
+/** Función para cuando hay interrupción Tx en Usart2, cargue string en el DR y desactive */
+void usart2Tx_String(void){
+	int j = 0;
+	while(ptrdataUSARTstring[j] != '\0'){
+		USART2->DR = ptrdataUSARTstring[j];
+		j++;
+	}
+	USART2->CR1 &= ~USART_CR1_TXEIE;
+}
+
+/** Función para cuando hay interrupción Tx en Usart6, cargue string en el DR y desactive */
+void usart6Tx_String(void){
+	int j = 0;
+	while(ptrdataUSARTstring[j] != '\0'){
+		USART6->DR = ptrdataUSARTstring[j];
+		j++;
+	}
+	USART6->CR1 &= ~USART_CR1_TXEIE;
+}
+
+/** Función para recibir datos */
+uint8_t getRxData(void){
 	return auxRxData;
 }
 
-/*
- *  Handler de la interrupción del USART
- *  Acá deben estar todas las interrupciones asociadas: TX, RX, PE...
- */
 
-
-/* Interrupciones asociadas a RX*/
-void USART1_IRQHandler (void){
-	// Evaluamos si la interrupción que se dió es por RX
-	if (USART1 -> SR & USART_SR_RXNE){
-		auxRxData = (uint8_t) USART1 -> DR;
+/** ISR de la interrupción del USART1 */
+void USART1_IRQHandler(void){
+	// Evaluamos si la interrupción que se dio es por RX
+	if(USART1->SR & USART_SR_RXNE){
+		auxRxData = (uint8_t) USART1->DR;
 		usart1Rx_Callback();
-		while (!(USART1->SR & USART_SR_TC));
 	}
-	// Evaluamos si la interrupción que se dió es por TX
-	else if ((USART1 -> SR & USART_SR_TXE)){
-		usart1Tx_Callback();
+	// Evaluamos si la interrupción que se dio es por TX
+	else if(USART1->SR & USART_SR_TXE){
+		if(charOrString){
+			usart1Tx_String();
+		}
+		else{
+			usart1Tx_Char();
+		}
+	}
+	else{
+		__NOP();
 	}
 }
 
-void USART2_IRQHandler (void){
-	// Evaluamos si la interrupción que se dió es por RX
-	if (USART2 -> SR & USART_SR_RXNE){
-		auxRxData = (uint8_t) USART2 -> DR;
+/** ISR de la interrupción del USART2 */
+void USART2_IRQHandler(void){
+	// Evaluamos si la interrupción que se dio es por RX
+	if(USART2->SR & USART_SR_RXNE){
+		auxRxData = (uint8_t) USART2->DR;
 		usart2Rx_Callback();
-		while (!(USART2->SR & USART_SR_TC));
 	}
-	// Evaluamos si la interrupción que se dió es por TX
-	else if ((USART2 -> SR & USART_SR_TXE)){
-		usart2Tx_Callback();
+	// Evaluamos si la interrupción que se dio es por TX
+	else if(USART2->SR & USART_SR_TXE){
+		if(charOrString){
+			usart2Tx_String();
+		}
+		else{
+			usart2Tx_Char();
+		}
+	}
+	else{
+		__NOP();
 	}
 }
 
-void USART6_IRQHandler (void){
-	// Evaluamos si la interrupción que se dió es por RX
-	if (USART6 -> SR & USART_SR_RXNE){
-		auxRxData = (uint8_t) USART6 -> DR;
+/** ISR de la interrupción del USART6 */
+void USART6_IRQHandler(void){
+	// Evaluamos si la interrupción que se dio es por RX
+	if(USART6->SR & USART_SR_RXNE){
+		auxRxData = (uint8_t) USART6->DR;
 		usart6Rx_Callback();
-		while (!(USART6->SR & USART_SR_TC));
 	}
-	// Evaluamos si la interrupción que se dió es por TX
-	else if ((USART6 -> SR & USART_SR_TXE)){
-		usart6Tx_Callback();
+	// Evaluamos si la interrupción que se dio es por TX
+	else if(USART6->SR & USART_SR_TXE){
+		if(charOrString){
+			usart6Tx_String();
+		}
+		else{
+			usart6Tx_Char();
+		}
+	}
+	else{
+		__NOP();
 	}
 }
 
+/** Funciones callback weak, que pueden ser sobre-escritas*/
 __attribute__((weak)) void usart1Rx_Callback(void){
 	__NOP();
 }
-
 __attribute__((weak)) void usart2Rx_Callback(void){
 	__NOP();
 }
-
 __attribute__((weak)) void usart6Rx_Callback(void){
 	__NOP();
 }
 
-__attribute__((weak)) void usart1Tx_Callback(void){
-	__NOP();
-}
-
-__attribute__((weak)) void usart2Tx_Callback(void){
-	__NOP();
-}
-
-__attribute__((weak)) void usart6Tx_Callback(void){
-	__NOP();
-}

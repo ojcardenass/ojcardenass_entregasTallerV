@@ -11,19 +11,24 @@ void pwm_Config(PWM_Handler_t *ptrPwmHandler){
 
 	/* 1. Activar la señal de reloj del periférico requerido */
 	if(ptrPwmHandler->ptrTIMx == TIM2){
-		RCC->AHB1ENR |= RCC_APB1ENR_TIM2EN;
+		RCC->APB1ENR &= ~RCC_APB1ENR_TIM2EN;
+		RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 	}
 	else if(ptrPwmHandler->ptrTIMx == TIM3){
-		RCC->AHB1ENR |= RCC_APB1ENR_TIM3EN;
+		RCC->APB1ENR &= ~RCC_APB1ENR_TIM3EN;
+		RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 	}
 	else if(ptrPwmHandler->ptrTIMx == TIM4){
-		RCC->AHB1ENR |= RCC_APB1ENR_TIM4EN;
+		RCC->APB1ENR &= ~RCC_APB1ENR_TIM4EN;
+		RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 	}
 	else if(ptrPwmHandler->ptrTIMx == TIM5){
-		RCC->AHB1ENR |= RCC_APB1ENR_TIM5EN;
+		RCC->APB1ENR &= ~RCC_APB1ENR_TIM5EN;
+		RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
 	}
 	else if(ptrPwmHandler->ptrTIMx == TIM10){
-		RCC->AHB2ENR |= RCC_APB2ENR_TIM10EN;
+		RCC->APB2ENR &= ~RCC_APB2ENR_TIM10EN;
+		RCC->APB2ENR |= RCC_APB2ENR_TIM10EN;
 	}
 	else{
 		__NOP();
@@ -37,6 +42,8 @@ void pwm_Config(PWM_Handler_t *ptrPwmHandler){
 
 	/* 2a. Estamos en UP_Mode, el limite se carga en ARR y se comienza en 0 */
 	ptrPwmHandler->ptrTIMx->CR1 &= ~TIM_CR1_DIR;
+    ptrPwmHandler->ptrTIMx->ARR = ptrPwmHandler->config.periodo - 1;
+    ptrPwmHandler->ptrTIMx->CNT = 0;
 
 	/* 3. Configuramos los bits CCxS del registro TIMy_CCMR1, de forma que sea modo salida
 	 * (para cada canal hay un conjunto CCxS)
@@ -63,11 +70,10 @@ void pwm_Config(PWM_Handler_t *ptrPwmHandler){
 
 	case PWM_CHANNEL_2:{
 		// Seleccionamos como salida el canal
-		ptrPwmHandler->ptrTIMx->CCMR1 &= ~TIM_CCMR1_CC2S_0;
-		ptrPwmHandler->ptrTIMx->CCMR1 &= ~TIM_CCMR1_CC2S_1;
+		ptrPwmHandler->ptrTIMx->CCMR1 &= ~TIM_CCMR1_CC2S;
 
 		// Configuramos el canal como PWM
-		ptrPwmHandler->ptrTIMx->CCMR1 |= TIM_CCMR1_OC2M_0;
+		ptrPwmHandler->ptrTIMx->CCMR1 &= TIM_CCMR1_OC2M_0;
 		ptrPwmHandler->ptrTIMx->CCMR1 |= TIM_CCMR1_OC2M_1;
 		ptrPwmHandler->ptrTIMx->CCMR1 |= TIM_CCMR1_OC2M_2;
 
@@ -78,11 +84,10 @@ void pwm_Config(PWM_Handler_t *ptrPwmHandler){
 
 	case PWM_CHANNEL_3:{
 		// Seleccionamos como salida el canal
-		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC3S_0;
-		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC3S_1;
+		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC3S;
 
 		// Configuramos el canal como PWM
-		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC3M_0;
+		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_OC3M_0;
 		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC3M_1;
 		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC3M_2;
 
@@ -93,11 +98,10 @@ void pwm_Config(PWM_Handler_t *ptrPwmHandler){
 
 	case PWM_CHANNEL_4:{
 		// Seleccionamos como salida el canal
-		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC4S_0;
-		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC4S_1;
+		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_CC4S;
 
 		// Configuramos el canal como PWM
-		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC4M_0;
+		ptrPwmHandler->ptrTIMx->CCMR2 &= ~TIM_CCMR2_OC4M_0;
 		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC4M_1;
 		ptrPwmHandler->ptrTIMx->CCMR2 |= TIM_CCMR2_OC4M_2;
 

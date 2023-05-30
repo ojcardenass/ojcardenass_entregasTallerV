@@ -222,13 +222,13 @@ void SPI_Config(SPI_Handler_t *ptrSPIHandler){
 	}
 
 }
-
+/* Funciones para el pin Chip Select*/
 /*Seleccionamos el esclavo llevando el pin NSS a GND*/
 void NSS_LOW(SPI_Handler_t* ptrSPIHandler){
 	GPIO_WritePin(&ptrSPIHandler->NSS_Pin, RESET);
 }
 
-/*Seleccionamos el esclavo llenando el pin NSS a VCC*/
+/*Seleccionamos el esclavo llevando el pin NSS a VCC*/
 void NSS_HIGH(SPI_Handler_t* ptrSPIHandler){
 	GPIO_WritePin(&ptrSPIHandler->NSS_Pin, SET);
 }
