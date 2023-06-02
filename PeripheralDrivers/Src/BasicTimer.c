@@ -133,6 +133,14 @@ void BasicTimer_Config(BasicTimer_Handler_t *ptrBTimerHandler){
 	__enable_irq();
 }
 
+void startCounterTimer(BasicTimer_Handler_t *ptrBTimerHandler){
+	ptrBTimerHandler->ptrTIMx->CR1 |= TIM_CR1_CEN;
+}
+
+void stopCounterTimer(BasicTimer_Handler_t *ptrBTimerHandler){
+	ptrBTimerHandler->ptrTIMx->CR1 &= ~TIM_CR1_CEN;
+}
+
 __attribute__((weak)) void BasicTimer2_Callback(void){
 	  /* NOTE : This function should not be modified, when the callback is needed,
 	            the BasicTimerX_Callback could be implemented in the main file
