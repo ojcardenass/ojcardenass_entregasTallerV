@@ -105,6 +105,12 @@ int main(void){
 
 	arm_max_f32(fft_output, SIZE_FFT/2, &max_value, &max_index);
 
+	// Convirtiendo a rango logaritmico
+	/* 20 * log_10(fft_output)*/
+	/* 48 kHz sampling*/
+	/* 1024 es el tamaño del muestreo*/
+	/* Frecuencia a monitorear = f * (1024/(46875/2))*/
+
 	// The max_value variable now contains the maximum value in the fft_output buffer
 
 }

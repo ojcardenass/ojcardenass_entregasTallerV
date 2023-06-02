@@ -7,6 +7,7 @@
 #include "stm32f4xx.h"
 #include "MAX7219Driver.h"
 #include "SysTickDriver.h"
+#include "PLLDriver.h"
 
 SPI_Handler_t handlerSPI		= {0};
 GPIO_Handler_t handlerCS		= {0};
@@ -15,7 +16,7 @@ GPIO_Handler_t handlerCS		= {0};
 void MAX7219_Init(void){
 
 	/* Configuramos el SysTick*/
-	config_SysTick_ms(SYSTICK_LOAD_VALUE_16MHz_1ms);
+	config_SysTick_ms(CLKSPEED);
 
 	// Configuración del pin NSS
 	handlerCS.pGPIOx									= GPIOB;
@@ -70,7 +71,7 @@ void send_to_MAX7219(uint8_t addr, uint8_t data){
 	SPI_Send(&handlerSPI,addr);
 	SPI_Send(&handlerSPI,data);
 	NSS_HIGH(&handlerSPI);
-	delay_ms(2);
+	//delay_ms(2);
 }
 
 /* Funcion para enviar datos, solamente a la primera matriz del MAX7219*/

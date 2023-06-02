@@ -99,7 +99,6 @@ typedef struct{
 
 /* Definicion de los prototipos para las funciones del SPI */
 void SPI_Config(SPI_Handler_t *ptrSPIHandler);
-int writeChar(SPI_Handler_t *ptrSPIHandler, int dataToSend );
 // Spi send and receive apis
 void SPI_Send(SPI_Handler_t *ptrSPIHandler, uint8_t TxBuffer) ;
 void SPI_Read(SPI_Handler_t *ptrSPIHandler , uint8_t RxBuffer ) ;
