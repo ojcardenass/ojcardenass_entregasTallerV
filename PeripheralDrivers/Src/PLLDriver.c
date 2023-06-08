@@ -45,8 +45,10 @@ void configPLL(int mcuspeed){
 		// APB2 prescaler, no se divide, ya que puede trabajar a 80 MHz
 		RCC -> CFGR &= ~ RCC_CFGR_PPRE2;
 		RCC -> CFGR |= RCC_CFGR_PPRE2_DIV1;
-		// PLL clock selected
-		RCC -> CFGR |= RCC_CFGR_MCO1;
+//		// PLL clock selected
+//		RCC -> CFGR |= RCC_CFGR_MCO1;
+		// HSI clock selected
+		RCC -> CFGR &= ~RCC_CFGR_MCO1;
 		// Factor de división (prescaler) = 5, señal de salida 20 MHz, para poder observar en osciloscopio
 		RCC -> CFGR &= ~ RCC_CFGR_MCO1PRE;
 		RCC -> CFGR |= RCC_CFGR_MCO1PRE;

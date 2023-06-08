@@ -71,7 +71,7 @@ GPIO_Handler_t			handlerI2cSCL			= 	{0};
 I2C_Handler_t			handlerAccelerometer	=	{0};
 uint8_t					i2cBuffer				=	0;
 
-#define ACCEL_ADDRESS 	0b1101000
+#define ACCEL_ADDRESS 	0b01101000
 #define ACCEL_XOUT_H 	59	//0x3B
 #define ACCEL_XOUT_L 	60	//0x3C
 #define ACCEL_YOUT_H 	61	//0x3D
@@ -384,24 +384,23 @@ void init_Hardware(void){
 	i2c_config(&handlerLCD);
 } // Fin del init_Hardware
 
-
 int16_t readXValue(I2C_Handler_t *ptrHandlerI2C){
-	int8_t AccelX_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_XOUT_L);
-	int8_t AccelX_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_XOUT_H);
+	uint8_t AccelX_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_XOUT_L);
+	uint8_t AccelX_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_XOUT_H);
 	int16_t AccelX = AccelX_high << 8 | AccelX_low;
 	return AccelX;
 }
 
 int16_t readYValue(I2C_Handler_t *ptrHandlerI2C){
-	int8_t AccelY_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_YOUT_L);
-	int8_t AccelY_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_YOUT_H);
+	uint8_t AccelY_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_YOUT_L);
+	uint8_t AccelY_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_YOUT_H);
 	int16_t AccelY = AccelY_high << 8 | AccelY_low;
 	return AccelY;
 }
 
 int16_t readZValue(I2C_Handler_t *ptrHandlerI2C){
-	int8_t AccelZ_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_ZOUT_L);
-	int8_t AccelZ_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_ZOUT_H);
+	uint8_t AccelZ_low = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_ZOUT_L);
+	uint8_t AccelZ_high = i2c_readSingleRegister(ptrHandlerI2C, ACCEL_ZOUT_H);
 	int16_t AccelZ = AccelZ_high << 8 | AccelZ_low;
 	return AccelZ;
 }
