@@ -201,7 +201,6 @@ void configAnalogPin(uint8_t adcChannel) {
 		// se necesitan para trabajos posteriores.
 		break;
 	}
-		;
 
 	case ADC_CHANNEL_1: {
 		handlerAdcPin.pGPIOx						= GPIOA;
@@ -324,7 +323,7 @@ void adcExternalConfig(ADC_Config_t *adcConfig){
 /****************************************************************************************************************
  ----------------------------------------------------- Multicanal ----------------------------------------------
  ***************************************************************************************************************/
-void MultiCanalConfig(ADC_Config_t *adcConfig, uint8_t numCan){
+void multiChannelConfig(ADC_Config_t *adcConfig, uint8_t numCan){
 
 	/* 1. Configuramos el PinX para que cumpla la función de canal análogo deseado. */
 	for(uint8_t i = 0; i < numCan; i++){
@@ -429,8 +428,10 @@ void MultiCanalConfig(ADC_Config_t *adcConfig, uint8_t numCan){
 
 	}
 
-	/* 9. Configuramos el preescaler del ADC en 2:1 (el mas rápido que se puede tener */
+	/* 9. Configuramos el preescaler del ADC en 1:4 (el mas rápido que se puede tener */
+	//
 	ADC->CCR |= ADC_CCR_ADCPRE_0;
+
 	//ADC->CCR &= ~ADC_CCR_ADCPRE_0;
 
 	/* 10. Desactivamos las interrupciones globales */

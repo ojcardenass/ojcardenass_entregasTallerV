@@ -35,7 +35,6 @@ GPIO_Handler_t			handlerI2cSDA			= 	{0};
 GPIO_Handler_t			handlerI2cSCL			= 	{0};
 I2C_Handler_t			handlerAccelerometer	=	{0};
 uint8_t					i2cBuffer				=	0;
-
 #define ACCEL_ADDRESS 	0b1101000; //0b1101001
 #define ACCEL_XOUT_H 	59	//0x3B
 #define ACCEL_XOUT_L 	60	//0x3C
@@ -43,7 +42,8 @@ uint8_t					i2cBuffer				=	0;
 #define ACCEL_YOUT_L 	62	//0x3E
 #define ACCEL_ZOUT_H 	63	//0x3F
 #define ACCEL_ZOUT_L 	64	//0x40
-
+uint8_t					accelRegistersToRead[6]	=	{ACCEL_XOUT_H,ACCEL_XOUT_L,ACCEL_YOUT_H,ACCEL_YOUT_L,ACCEL_ZOUT_H,ACCEL_ZOUT_L};
+uint8_t					dataAccelRegisters[6]	=	{0};
 #define PWR_MGMT_1 		107
 #define WHO_AM_I		117
 
@@ -91,6 +91,7 @@ int main(void){
 			else if(rxData == 'x'){
 				sprintf(bufferData, "Axis X data (r)\n");
 				writeMsg(&usart2Comm, bufferData);
+
 
 				int8_t AccelX_low = i2c_readSingleRegister(&handlerAccelerometer, ACCEL_XOUT_L);
 				int8_t AccelX_high = i2c_readSingleRegister(&handlerAccelerometer, ACCEL_XOUT_H);

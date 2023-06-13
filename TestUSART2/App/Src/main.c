@@ -37,12 +37,31 @@ BasicTimer_Handler_t	handlerBlinkyTimer		=	{0};
 /* Elementos para la comunicacion Serial*/
 GPIO_Handler_t			handlerPinTX			=	{0};
 GPIO_Handler_t			handlerPinRX			=	{0};
-USART_Handler_t			usart6Comm				=	{0};
-uint8_t 				sendMsg 				= 	0;
+USART_Handler_t			usart2Comm				=	{0};
+uint8_t 				rxData	 				= 	0;
 uint8_t					usart2DataReceived		=	0;
 
 char	bufferData[64] = "Hola, voy a dominar el mundo :) .";
 char	bufferMsg[64] = {0};
+
+/* Configuracion para el I2C*/
+GPIO_Handler_t			handlerI2cSDA			= 	{0};
+GPIO_Handler_t			handlerI2cSCL			= 	{0};
+I2C_Handler_t			handlerAccelerometer	=	{0};
+uint8_t					i2cBuffer				=	0;
+#define ACCEL_ADDRESS 	0b1101000; //0b1101001
+#define ACCEL_XOUT_H 	59	//0x3B
+#define ACCEL_XOUT_L 	60	//0x3C
+#define ACCEL_YOUT_H 	61	//0x3D
+#define ACCEL_YOUT_L 	62	//0x3E
+#define ACCEL_ZOUT_H 	63	//0x3F
+#define ACCEL_ZOUT_L 	64	//0x40
+uint8_t					accelRegistersToRead[6]	=	{ACCEL_XOUT_H,ACCEL_XOUT_L,ACCEL_YOUT_H,ACCEL_YOUT_L,ACCEL_ZOUT_H,ACCEL_ZOUT_L};
+uint8_t					dataAccelRegisters[6]	=	{0};
+int16_t 				accelData[3]			= 	{0};
+
+#define PWR_MGMT_1 		107
+#define WHO_AM_I		117
 
 void init_Hardware(void);
 
@@ -53,28 +72,54 @@ int 		clock = 0;
 int main(void){
     /* Inicializamos todos los elementos del sistema */
 	init_Hardware();
-
+	writeMsg(&usart2Comm, bufferData);
 	/* Loop forever */
 	while(1){
+		// Hacems un eco del valor que nos llega por serial
+		if(rxData != '\0'){
+			writeChar(&usart2Comm, rxData);
 
-		if(sendMsg > 4){
-			writeChar(&usart6Comm, 'G');
-//			writeMsg(&usart2Comm, bufferData);
-//
-//			// Crea el string y lo almacena en el arreglo bufferMsg
-//			sprintf(bufferMsg, "Valor de sendMsg = %d \n", sendMsg);
-//			writeMsg(&usart2Comm, bufferMsg);
+			if(rxData == 'w'){
+				sprintf(bufferData, "WHO_AM_I? (r)\n");
+				writeMsg(&usart2Comm, bufferData);
 
-			sendMsg = 0;
-		}
-		if(usart2DataReceived != '\0'){
-			/* Echo, envia lo regreso lo que recibe*/
-			//writeChar(&usart2Comm, usart2DataReceived);
-			/* Se crea un mensaje para el caracter recibido*/
-			sprintf(bufferMsg, "Recibido Char = %c \n", usart2DataReceived);
-			writeMsg(&usart6Comm, bufferMsg);
+				i2cBuffer = i2c_readSingleRegister(&handlerAccelerometer, WHO_AM_I);
+				sprintf(bufferData, "dataRead = 0x%x \n", (unsigned int) i2cBuffer);
+				writeMsg(&usart2Comm, bufferData);
+				rxData = '\0';
+			}
 
-			usart2DataReceived = '\0';
+			else if(rxData == 'p'){
+				sprintf(bufferData, "PWR_MGMT_1 state (r)\n");
+				writeMsg(&usart2Comm, bufferData);
+
+				i2cBuffer = i2c_readSingleRegister(&handlerAccelerometer, PWR_MGMT_1);
+				sprintf(bufferData, "dataRead = 0x%x \n",(unsigned int) i2cBuffer);
+				writeMsg(&usart2Comm, bufferData);
+				rxData = '\0';
+			}
+
+			else if(rxData == 'x'){
+				sprintf(bufferData, "Axis X data (r)\n");
+				writeMsg(&usart2Comm, bufferData);
+
+				i2c_readMultipleRegister(&handlerAccelerometer,ACCEL_XOUT_H,dataAccelRegisters,6);
+				// Combine the high and low bytes for each axis
+				for (int i = 0; i < 3; i++) {
+				    accelData[i] = (int16_t)((dataAccelRegisters[i * 2] << 8) | dataAccelRegisters[i * 2 + 1]);
+				}
+
+				float AccelXVal = (accelData[0]/16384.0)*9.81;
+				float AccelYVal = (accelData[1]/16384.0)*9.81;
+				float AccelZVal = (accelData[2]/16384.0)*9.81;
+				sprintf(bufferData, "	%.2f m/s²		; %.2f m/s²		; %.2f m/s² \n", AccelXVal, AccelYVal, AccelZVal);
+				writeMsg(&usart2Comm, bufferData);
+				rxData = '\0';
+			}
+
+			else{
+				rxData = '\0';
+			}
 		}
 	}
 }
@@ -106,83 +151,64 @@ void init_Hardware(void){
 	handlerBlinkyTimer.TIMx_Config.TIMx_interruptEnable		= 1;
 	BasicTimer_Config(&handlerBlinkyTimer);
 
-	// Configurando el pin PC13 para que funcione como una entrada simple que funcionara con la interrupcion
-	// EXTI-13
-	handlerUserButton.pGPIOx								= GPIOC;
-	handlerUserButton.GPIO_PinConfig.GPIO_PinNumber			= PIN_13;
-	handlerUserButton.GPIO_PinConfig.GPIO_PinMode			= GPIO_MODE_IN;
-	handlerUserButton.GPIO_PinConfig.GPIO_PinPuPdControl	= GPIO_PUPDR_NOTHING;
-	GPIO_Config(&handlerUserButton);
-
-	handlerUserButtonExti.pGPIOHandler						= &handlerUserButton;
-	handlerUserButtonExti.edgeType							= EXTERNAL_INTERRUPT_RISING_EDGE;
-	extInt_Config(&handlerUserButtonExti);
-
-//	/* Configuracion para la comunicacion serial USART2*/
-//	handlerPinTX.pGPIOx										= GPIOA;
-//	handlerPinTX.GPIO_PinConfig.GPIO_PinNumber				= PIN_2;
-//	handlerPinTX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-//	handlerPinTX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
-//	GPIO_Config(&handlerPinTX);
-//
-//	handlerPinRX.pGPIOx										= GPIOA;
-//	handlerPinRX.GPIO_PinConfig.GPIO_PinNumber				= PIN_3;
-//	handlerPinRX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-//	handlerPinRX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
-//	GPIO_Config(&handlerPinRX);
-//
-//	usart2Comm.ptrUSARTx									= USART2;
-//	usart2Comm.USART_Config.USART_baudrate					= USART_BAUDRATE_115200;
-//	usart2Comm.USART_Config.USART_datasize					= USART_DATASIZE_8BIT;
-//	usart2Comm.USART_Config.USART_parity					= USART_PARITY_NONE;
-//	usart2Comm.USART_Config.USART_stopbits					= USART_STOPBIT_1;
-//	usart2Comm.USART_Config.USART_mode						= USART_MODE_RXTX;
-//	usart2Comm.USART_Config.USART_interruptionEnableRx		= USART_RX_INTERRUPT_ENABLE;
-//	usart2Comm.USART_Config.USART_interruptionEnableTx		= USART_TX_INTERRUPT_DISABLE;
-//	USART_Config(&usart2Comm);
-
-	/* Configuracion para la comunicacion serial USART6*/
-	handlerPinTX.pGPIOx										= GPIOC;
-	handlerPinTX.GPIO_PinConfig.GPIO_PinNumber				= PIN_6;
+	/* Configuracion para la comunicacion serial USART2*/
+	handlerPinTX.pGPIOx										= GPIOA;
+	handlerPinTX.GPIO_PinConfig.GPIO_PinNumber				= PIN_2;
 	handlerPinTX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-	handlerPinTX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF8;
+	handlerPinTX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
 	GPIO_Config(&handlerPinTX);
 
-	handlerPinRX.pGPIOx										= GPIOC;
-	handlerPinRX.GPIO_PinConfig.GPIO_PinNumber				= PIN_7;
+	handlerPinRX.pGPIOx										= GPIOA;
+	handlerPinRX.GPIO_PinConfig.GPIO_PinNumber				= PIN_3;
 	handlerPinRX.GPIO_PinConfig.GPIO_PinMode				= GPIO_MODE_ALTFN;
-	handlerPinRX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF8;
+	handlerPinRX.GPIO_PinConfig.GPIO_PinAltFunMode			= AF7;
 	GPIO_Config(&handlerPinRX);
 
-	usart6Comm.ptrUSARTx									= USART6;
-	usart6Comm.USART_Config.USART_baudrate					= USART_BAUDRATE_115200;
-	usart6Comm.USART_Config.USART_datasize					= USART_DATASIZE_8BIT;
-	usart6Comm.USART_Config.USART_parity					= USART_PARITY_NONE;
-	usart6Comm.USART_Config.USART_stopbits					= USART_STOPBIT_1;
-	usart6Comm.USART_Config.USART_mode						= USART_MODE_RXTX;
-	usart6Comm.USART_Config.USART_interruptionEnableRx		= USART_RX_INTERRUPT_ENABLE;
-	usart6Comm.USART_Config.USART_interruptionEnableTx		= USART_TX_INTERRUPT_DISABLE;
-	USART_Config(&usart6Comm);
+	usart2Comm.ptrUSARTx									= USART2;
+	usart2Comm.USART_Config.USART_baudrate					= USART_BAUDRATE_115200;
+	usart2Comm.USART_Config.USART_datasize					= USART_DATASIZE_8BIT;
+	usart2Comm.USART_Config.USART_parity					= USART_PARITY_NONE;
+	usart2Comm.USART_Config.USART_stopbits					= USART_STOPBIT_1;
+	usart2Comm.USART_Config.USART_mode						= USART_MODE_RXTX;
+	usart2Comm.USART_Config.USART_interruptionEnableRx		= USART_RX_INTERRUPT_ENABLE;
+	usart2Comm.USART_Config.USART_interruptionEnableTx		= USART_TX_INTERRUPT_DISABLE;
+	USART_Config(&usart2Comm);
 
+	/* Configurando los pines sobre los que funciona el I2C*/
+	handlerI2cSCL.pGPIOx 									= GPIOB;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinNumber 			= PIN_8;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinMode 				= GPIO_MODE_ALTFN;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinOPType 			= GPIO_OTYPE_OPENDRAIN;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinPuPdControl 		= GPIO_PUPDR_NOTHING;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinSpeed 				= GPIO_OSPEED_HIGH;
+	handlerI2cSCL.GPIO_PinConfig.GPIO_PinAltFunMode 		= AF4;
+	GPIO_Config(&handlerI2cSCL);
+
+	handlerI2cSDA.pGPIOx 									= GPIOB;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinNumber 			= PIN_9;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinMode 				= GPIO_MODE_ALTFN;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinOPType 			= GPIO_OTYPE_OPENDRAIN;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinPuPdControl 		= GPIO_PUPDR_NOTHING;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinSpeed 				= GPIO_OSPEED_HIGH;
+	handlerI2cSDA.GPIO_PinConfig.GPIO_PinAltFunMode 		= AF4;
+	GPIO_Config(&handlerI2cSDA);
+
+	handlerAccelerometer.ptrI2Cx							= I2C1;
+	handlerAccelerometer.modeI2C							= I2C_MODE_FM;
+	handlerAccelerometer.slaveAddress						= ACCEL_ADDRESS;
+	i2c_config(&handlerAccelerometer);
 
 } // Fin del init_Hardware
 
 /* Callback del TIM2 par hacer un blinky con el led de estado*/
 void BasicTimer2_Callback(void){
-	//handlerBlinkyPin.pGPIOx -> ODR ^= GPIO_ODR_OD5;
 	GPIOxTooglePin(&handlerBlinkyPin);
-	sendMsg++;
-}
-
-/* Callback del userbutton*/
-void callback_extInt13(void){
-	__NOP();
 }
 
 /* Esta funcion se ejecuta cada vez que un caracter es recibido por
  * el puerto del USART2*/
-void usart6Rx_Callback (void){
-	usart2DataReceived = getRxData();
+void usart2Rx_Callback (void){
+	rxData = getRxData();
 }
 
 

@@ -95,21 +95,27 @@ float32_t samples[512] = {
 int main(void){
 
 	arm_rfft_fast_init_f32(&fft_instance, SIZE_FFT);
-	// fill input array with your samples
-	for (int i = 0; i < SIZE_FFT; i++) {
-	    fft_input[i] = samples[i];
-	}
+//	// fill input array with your samples
+//	for (int i = 0; i < SIZE_FFT; i++) {
+//	    fft_input[i] = samples[i];
+//	}
 	arm_rfft_fast_f32(&fft_instance, fft_input, fft_output, 0);
 	// Calculate the magnitude of the complex numbers
 	arm_cmplx_mag_f32(fft_output, fft_output, SIZE_FFT/2);
 
 	arm_max_f32(fft_output, SIZE_FFT/2, &max_value, &max_index);
 
+
 	// Convirtiendo a rango logaritmico
 	/* 20 * log_10(fft_output)*/
 	/* 48 kHz sampling*/
 	/* 1024 es el tamaño del muestreo*/
 	/* Frecuencia a monitorear = f * (1024/(46875/2))*/
+	/*The first bin in the FFT is DC (0 Hz), the second bin is Fs / N,
+	 * where Fs is the sample rate and N is the size of the FFT.
+	 * The next bin is 2 * Fs / N. To express this in general terms, the nth bin is n * Fs / N.
+	 * So if your sample rate, Fs is say 44.1 kHz and your FFT size, N is 1024,
+	 * then the FFT output bins are at:*/
 
 	// The max_value variable now contains the maximum value in the fft_output buffer
 

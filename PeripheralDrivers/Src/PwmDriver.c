@@ -229,6 +229,43 @@ void updateDuttyCycle(PWM_Handler_t *ptrPwmHandler, uint16_t newDutty){
 	setDuttyCycle(ptrPwmHandler);
 }
 
+/* Función encargada de activar la generación de eventos con los timers */
+void enableEvent(PWM_Handler_t *ptrPwmHandler) {
+	switch (ptrPwmHandler -> config.channel) {
+	case PWM_CHANNEL_1: {
+		// Activamos la salida del canal 1
+		ptrPwmHandler -> ptrTIMx -> EGR |= TIM_EGR_CC1G;
+		break;
+	}
+
+	case PWM_CHANNEL_2: {
+		// Activamos la salida del canal 1
+		ptrPwmHandler -> ptrTIMx -> EGR |= TIM_EGR_CC2G;
+		break;
+		}
+
+	case PWM_CHANNEL_3: {
+		// Activamos la salida del canal 1
+		ptrPwmHandler -> ptrTIMx -> EGR |= TIM_EGR_CC3G;
+		break;
+		}
+
+	case PWM_CHANNEL_4: {
+		// Activamos la salida del canal 1
+		ptrPwmHandler -> ptrTIMx -> EGR |= TIM_EGR_CC4G;
+		break;
+		}
+
+	default: {
+		break;
+	}
+	}
+}
+
+/* Función encargada de desactivar la generación de eventos con los timers */
+void disableEvent (PWM_Handler_t *ptrPwmHandler) {
+	ptrPwmHandler -> ptrTIMx -> EGR = 0;
+}
 
 
 

@@ -65,11 +65,36 @@ void i2c_config(I2C_Handler_t *ptrHandlerI2C){
 
 		// Se configura el registro que se encarga de generar la señal
 		// del reloj
-		ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_SM_SPEED_100KHz << I2C_CCR_CCR_Pos);
-
+		switch (CLKSPEED) {
+			case 16:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_SM_SPEED_100KHz_16MHz << I2C_CCR_CCR_Pos);
+				break;
+			case 80:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_SM_SPEED_100KHz_80MHz << I2C_CCR_CCR_Pos);
+				break;
+			case 100:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_SM_SPEED_100KHz_80MHz << I2C_CCR_CCR_Pos);
+				break;
+			default:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_SM_SPEED_100KHz_16MHz << I2C_CCR_CCR_Pos);
+				break;
+		}
 		// Se configura el registro que controla el tiempo T-Rise
 		// máximo
-		ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_SM;
+		switch (CLKSPEED) {
+			case 16:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_SM_16MHz;
+				break;
+			case 80:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_SM_80MHz;
+				break;
+			case 100:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_SM_100MHz;
+				break;
+			default:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_SM_16MHz;
+				break;
+		}
 
 	}
 	else{
@@ -80,11 +105,37 @@ void i2c_config(I2C_Handler_t *ptrHandlerI2C){
 
 		// Se configura el registro que se encarga de generar la señal
 		// del reloj
-		ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_FM_SPEED_400KHz << I2C_CCR_CCR_Pos);
-
+		switch (CLKSPEED) {
+			case 16:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_FM_SPEED_400KHz_16MHz << I2C_CCR_CCR_Pos);
+				break;
+			case 80:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_FM_SPEED_400KHz_80MHz << I2C_CCR_CCR_Pos);
+				break;
+			case 100:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_FM_SPEED_400KHz_80MHz << I2C_CCR_CCR_Pos);
+				break;
+			default:
+				ptrHandlerI2C->ptrI2Cx->CCR |= (I2C_MODE_FM_SPEED_400KHz_16MHz << I2C_CCR_CCR_Pos);
+				break;
+		}
 		// Se configura el registro que controla el tiempo T-Rise
 		// máximo
-		ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_FM;
+		switch (CLKSPEED) {
+			case 16:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_FM_16MHz;
+				break;
+			case 80:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_FM_80MHz;
+				break;
+			case 100:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_FM_100MHz;
+				break;
+			default:
+				ptrHandlerI2C->ptrI2Cx->TRISE |= I2C_MAX_RISE_TIME_FM_16MHz;
+				break;
+		}
+
 	}
 
 	/* 5. Se activa el modulo I2C */
@@ -228,6 +279,8 @@ uint8_t i2c_readSingleRegister(I2C_Handler_t *ptrHandlerI2C, uint8_t regToRead){
 	 * y el slave solo envie 1 byte */
 	i2c_sendNoAck(ptrHandlerI2C);
 
+	/* read multiple */
+
 	/* 7. Se genera la condición Stop, para que el slave se detenga
 	 * después de 1 byte */
 	i2c_stopTransaction(ptrHandlerI2C);
@@ -236,8 +289,46 @@ uint8_t i2c_readSingleRegister(I2C_Handler_t *ptrHandlerI2C, uint8_t regToRead){
 	auxRead = i2c_readDataByte(ptrHandlerI2C);
 
 	return auxRead;
-
 }
+
+/* Funcion para leer varios registros, recibe
+ * - Handler del I2C
+ * - Registro desde que se empiezan a leer los datos
+ * - Arreglo de salida
+ * - Cantidad de registros a leer
+ * */
+void i2c_readMultipleRegister(I2C_Handler_t *ptrHandlerI2C, uint8_t startReg, uint8_t* data, uint8_t numRegs){
+		/* 1. Se genera la condición Start*/
+		i2c_startTransaction(ptrHandlerI2C);
+
+		/* 2. Se envia la dirección del esclavo y la indicación de ESCRIBIR */
+		i2c_sendSlaveAddressRW(ptrHandlerI2C, ptrHandlerI2C->slaveAddress, I2C_WRITE_DATA);
+
+		/* 3. Se envía la dirección de memoria que se desea leer */
+		i2c_sendMemoryAddress(ptrHandlerI2C, startReg);
+
+		/* 4. Se crea una condición de reStart */
+		i2c_reStartTransaction(ptrHandlerI2C);
+
+		/* 5. Se envía la dirección del esclavo y la indicación de LEER */
+		i2c_sendSlaveAddressRW(ptrHandlerI2C, ptrHandlerI2C->slaveAddress, I2C_READ_DATA);
+
+		i2c_sendAck(ptrHandlerI2C);
+
+		/* 8. Se lee el dato que envía el esclavo */
+		for (uint8_t i = 0; i < numRegs; i ++){
+			data[i] = i2c_readDataByte(ptrHandlerI2C);
+		}
+
+		/* 6. Se genera la condición de NoAck, para que el Master no responda
+		 * y el slave solo envie 1 byte */
+		i2c_sendNoAck(ptrHandlerI2C);
+
+		/* 7. Se genera la condición Stop, para que el slave se detenga
+		 * después de 1 byte */
+		i2c_stopTransaction(ptrHandlerI2C);
+}
+
 
 void i2c_writeSingleRegister(I2C_Handler_t *ptrHandlerI2C, uint8_t regToRead, uint8_t newValue){
 	/* 1. Se genera la condición Start*/
