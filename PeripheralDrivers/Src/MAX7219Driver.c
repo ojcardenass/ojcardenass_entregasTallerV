@@ -14,7 +14,6 @@ GPIO_Handler_t handlerCS		= {0};
 
 
 void MAX7219_Init(void){
-
 	/* Configuramos el SysTick*/
 	config_SysTick_ms(CLKSPEED);
 
@@ -34,19 +33,19 @@ void MAX7219_Init(void){
 	GPIO_Config(&handlerCS);
 
 	// Configuracion SPI
-	handlerSPI.ptrSPIx										= SPI2;
-	handlerSPI.NSS_Pin										= handlerCS;
-	handlerSPI.SPIConfig.DeviceMode							= SPI_DEVICE_MODE_MASTER;
-	handlerSPI.SPIConfig.DirectionBusConfig					= SPI_BUS_CONFIG_TX;
-	handlerSPI.SPIConfig.BaudRatePrescaler					= SPI_SCLK_SPEED_DIV4;
-	handlerSPI.SPIConfig.DataSize							= SPI_DATA_SIZE_8BITS;
-	handlerSPI.SPIConfig.SPIMode							= SPI_MODE0;
-	handlerSPI.SPIConfig.FirstBit							= SPI_MSBFIRST;
-	handlerSPI.SPIConfig.NSS								= SPI_NSS_ENABLE;
-	handlerSPI.SPIConfig.TIMode								= SPI_TIMODE_DISABLE;
-	handlerSPI.SPIConfig.CRCCalculation						= SPI_CRC_DISABLE;
-	handlerSPI.SPIConfig.FrameFormat						= SPI_MOTOROLA_MODE;
-	handlerSPI.SPIConfig.State								= SPI_ENABLE;
+	handlerSPI.ptrSPIx									= SPI2;
+	handlerSPI.NSS_Pin									= handlerCS;
+	handlerSPI.SPIConfig.DeviceMode						= SPI_DEVICE_MODE_MASTER;
+	handlerSPI.SPIConfig.DirectionBusConfig				= SPI_BUS_CONFIG_TX;
+	handlerSPI.SPIConfig.BaudRatePrescaler				= SPI_SCLK_SPEED_DIV16;
+	handlerSPI.SPIConfig.DataSize						= SPI_DATA_SIZE_8BITS;
+	handlerSPI.SPIConfig.SPIMode						= SPI_MODE0;
+	handlerSPI.SPIConfig.FirstBit						= SPI_MSBFIRST;
+	handlerSPI.SPIConfig.NSS							= SPI_NSS_ENABLE;
+	handlerSPI.SPIConfig.TIMode							= SPI_TIMODE_DISABLE;
+	handlerSPI.SPIConfig.CRCCalculation					= SPI_CRC_DISABLE;
+	handlerSPI.SPIConfig.FrameFormat					= SPI_MOTOROLA_MODE;
+	handlerSPI.SPIConfig.State							= SPI_ENABLE;
 	SPI_Config(&handlerSPI);
 
 	displayTest();
