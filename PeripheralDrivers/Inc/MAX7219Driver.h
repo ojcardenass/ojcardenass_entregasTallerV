@@ -58,8 +58,9 @@ void sendMatrix2(uint8_t addr, uint8_t data);
 void sendMatrix3(uint8_t addr, uint8_t data);
 void sendMatrix4(uint8_t addr, uint8_t data);
 void sendNO_OP(void);
-
 void rowOut(uint8_t* values, uint8_t* ledBuffer);
 void setColumnsModx(uint8_t* values, uint8_t module);
+void setColumnsModx2(uint8_t* values, uint8_t module);
+void hi(void);
 
 #endif /* MAX7219DRIVER_H_ */

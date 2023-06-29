@@ -85,7 +85,8 @@ int main(void){
 	MAX7219_Init();
 
 	while(1){
-//		sendMatrix1(DIGIT1,0x3C);
+		//send_to_MAX7219(DIGIT1, 0x3C<<1);
+		sendMatrix1(DIGIT1,0x3C<<2);
 //		sendMatrix1(DIGIT2,0x18);
 //		sendMatrix1(DIGIT3,0x18);
 //		sendMatrix1(DIGIT4,0x18);
@@ -163,13 +164,13 @@ int main(void){
 
 		/* Prueba de stream con 11 arrays*/
 		// Loop para cada array
-		for (int arrIndex = 0; arrIndex < 11; arrIndex++) {
-		    uint8_t* currentArray = freqMagArrays[arrIndex];
-		    for (int i = 0; i < 4; i++) {
-		        setColumnsModx(&currentArray[i * 8], i + 1);
-		    }
-		    delay_ms(150);
-		}
+//		for (int arrIndex = 0; arrIndex < 11; arrIndex++) {
+//		    uint8_t* currentArray = freqMagArrays[arrIndex];
+//		    for (int i = 0; i < 4; i++) {
+//		        setColumnsModx(&currentArray[i * 8], i + 1);
+//		    }
+//		    delay_ms(150);
+//		}
 
 		//clearDisplay();
 	} // FIN CICLO INFINITO

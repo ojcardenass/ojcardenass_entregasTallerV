@@ -37,7 +37,7 @@ void MAX7219_Init(void){
 	handlerSPI.NSS_Pin									= handlerCS;
 	handlerSPI.SPIConfig.DeviceMode						= SPI_DEVICE_MODE_MASTER;
 	handlerSPI.SPIConfig.DirectionBusConfig				= SPI_BUS_CONFIG_TX;
-	handlerSPI.SPIConfig.BaudRatePrescaler				= SPI_SCLK_SPEED_DIV16;
+	handlerSPI.SPIConfig.BaudRatePrescaler				= SPI_SCLK_SPEED_DIV64;
 	handlerSPI.SPIConfig.DataSize						= SPI_DATA_SIZE_8BITS;
 	handlerSPI.SPIConfig.SPIMode						= SPI_MODE0;
 	handlerSPI.SPIConfig.FirstBit						= SPI_MSBFIRST;
@@ -119,6 +119,7 @@ void sendMatrix4(uint8_t addr, uint8_t data){
 	//delay_ms(1);
 }
 
+
 /* Funcion que retorna el valor para cada fila, segun la magnitud
  * de su columna
  *
@@ -137,6 +138,58 @@ void rowOut(uint8_t* values, uint8_t* ledBuffer){
 		ledBuffer[i] = colBuffer;
 	}
 }
+
+void rowOut2(uint8_t* values, uint8_t* ledBuffer) {
+	uint8_t columns[8] = {1,2,4,8,16,32,64,128};
+	for(uint8_t i = 0; i < 8; i ++){
+		uint8_t colBuffer = 0;
+		for(uint8_t j = 0; j < 8; j ++){
+			if(i < values[j]){
+				colBuffer += columns[j];
+			}
+		}
+		ledBuffer[i] = colBuffer;
+	}
+}
+
+void hi(void){
+	sendMatrix1(DIGIT0,0x00);
+	sendMatrix1(DIGIT1,0x66);
+	sendMatrix1(DIGIT2,0x66);
+	sendMatrix1(DIGIT3,0x7e);
+	sendMatrix1(DIGIT4,0x7e);
+	sendMatrix1(DIGIT5,0x66);
+	sendMatrix1(DIGIT6,0x66);
+	sendMatrix1(DIGIT7,0x00);
+
+	sendMatrix2(DIGIT0,0x00);
+	sendMatrix2(DIGIT1,0x3c);
+	sendMatrix2(DIGIT2,0x18);
+	sendMatrix2(DIGIT3,0x18);
+	sendMatrix2(DIGIT4,0x18);
+	sendMatrix2(DIGIT5,0x18);
+	sendMatrix2(DIGIT6,0x3c);
+	sendMatrix2(DIGIT7,0x00);
+
+	sendMatrix3(DIGIT0,0x00);
+	sendMatrix3(DIGIT1,0x36);
+	sendMatrix3(DIGIT2,0x76);
+	sendMatrix3(DIGIT3,0x70);
+	sendMatrix3(DIGIT4,0x70);
+	sendMatrix3(DIGIT5,0x76);
+	sendMatrix3(DIGIT6,0x36);
+	sendMatrix3(DIGIT7,0x00);
+
+	sendMatrix4(DIGIT0,0x06);
+	sendMatrix4(DIGIT1,0x6e);
+	sendMatrix4(DIGIT2,0xec);
+	sendMatrix4(DIGIT3,0xc8);
+	sendMatrix4(DIGIT4,0x88);
+	sendMatrix4(DIGIT5,0x98);
+	sendMatrix4(DIGIT6,0xf0);
+	sendMatrix4(DIGIT7,0x00);
+}
+
 /* Funcion lee un arreglo de magnitudes ordenadas por columnas, y se lo envia al
  * MAX7219, segun el modulo elegido*/
 void setColumnsModx(uint8_t* values, uint8_t module){
@@ -166,6 +219,45 @@ void setColumnsModx(uint8_t* values, uint8_t module){
 		break;
 	case 4:
 		rowOut(values,ledBuffer);
+		for(uint8_t i = 0;i < 8;i ++){
+			sendMatrix4(digits[i],ledBuffer[i]);
+		}
+		ledBuffer[8] = 0;
+		break;
+	default:
+		__NOP();
+	}
+}
+
+/* Funcion lee un arreglo de magnitudes ordenadas por columnas,en el modo 2 y se lo envia al
+ * MAX7219, segun el modulo elegido*/
+void setColumnsModx2(uint8_t* values, uint8_t module){
+	uint8_t digits[8] = {DIGIT0,DIGIT1,DIGIT2,DIGIT3,DIGIT4,DIGIT5,DIGIT6,DIGIT7};
+	uint8_t ledBuffer[8] = {0};
+	switch(module){
+	case 1:
+		rowOut2(values,ledBuffer);
+		for(uint8_t i = 0;i < 8;i ++){
+			sendMatrix1(digits[i],ledBuffer[i]);
+		}
+		ledBuffer[8] = 0;
+		break;
+	case 2:
+		rowOut2(values,ledBuffer);
+		for(uint8_t i = 0;i < 8;i ++){
+			sendMatrix2(digits[i],ledBuffer[i]);
+		}
+		ledBuffer[8] = 0;
+		break;
+	case 3:
+		rowOut2(values,ledBuffer);
+		for(uint8_t i = 0;i < 8;i ++){
+			sendMatrix3(digits[i],ledBuffer[i]);
+		}
+		ledBuffer[8] = 0;
+		break;
+	case 4:
+		rowOut2(values,ledBuffer);
 		for(uint8_t i = 0;i < 8;i ++){
 			sendMatrix4(digits[i],ledBuffer[i]);
 		}
