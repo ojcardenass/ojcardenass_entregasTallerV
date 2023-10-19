@@ -61,7 +61,7 @@ char					bufferLCD[64] 			= {0};
 /* Constantes */
 #define SIZE_FFT 2048
 /* Direccion de la LCD pin A0 = soldado (0), A1,A2 = libres (1,1)*/
-#define LCD_ADDRESS		0b00100110
+#define LCD_ADDRESS		0b00100000
 /* Banderas	*/
 uint8_t					flagcomplete			=	0;
 uint8_t					flagADC					=	0;
@@ -77,7 +77,7 @@ uint8_t					flagAutosc				=	0;
 
 /* Elementos para la comunicacion Serial*/
 /* ---------- USART ----------*/
-uint32_t 				refreshTim				=	333;
+uint32_t 				refreshTim				=	83;
 uint8_t					rxData					=	0;
 uint8_t					counterRx				=	0;
 bool					stringComplete			= false;
@@ -402,7 +402,7 @@ void parseCommands(char *ptrBufferRx){
 		writeMsg(&usart2Comm, "3 | stop				-- Stop the spectrum analyzer \n");
 		writeMsg(&usart2Comm, "4 | setdB			-- Set the Maximum dB to use as scale for LED Matrix [Default: 50 dB | Auto: 0 dB] \n");
 		writeMsg(&usart2Comm, "5 | setThreshold		-- Set the negative threshold above which dB values will be considered as zero. Only accepts positive values [Default: 0 dB] \n");
-		writeMsg(&usart2Comm, "6 | setRefresh		-- Set the refresh time for the LED Matrix in miliseconds. [Default: 33 ms] \n");
+		writeMsg(&usart2Comm, "6 | setRefresh		-- Set the refresh time for the LED Matrix in miliseconds. [Default: 8 ms] \n");
 		writeMsg(&usart2Comm, "7 | setMode			-- Select one of the two modes of spectrum display. [Default: 1] \n");
 		writeMsg(&usart2Comm, "8 | hi				-- Unknown \n");
 	}
@@ -463,7 +463,7 @@ void parseCommands(char *ptrBufferRx){
 		writeMsg(&usart2Comm, " Command: reset \n");
 		sprintf(bufferData, " All settings will be reset to their default values. \n");
 		writeMsg(&usart2Comm, bufferData);
-		refreshTim = 33*10;
+		refreshTim = 8*10;
 		maxDB = 50;
 		flagAutosc = 0;
 		threshold = 0;
