@@ -1,11 +1,11 @@
-## Repositorio de la Materia Taller V: Electrónica Digital 2023-1
+## Repository of the course Workshop V: Digital Electronics 2023-1
 
-Este repositorio contiene una colección de proyectos y tareas desarrolladas durante la materia Taller V: Electrónica Digital de la Universidad Nacional de Colombia Sede Medellín. A continuación, se presenta una breve descripción de la carpeta principal y se destaca el proyecto "LED Audio Analyzer".
+This repository contains a collection of projects and assignments developed during the course Workshop V: Digital Electronics at the Universidad Nacional de Colombia Sede Medellín. The following is a brief description of the main folder and highlights the project "LED Audio Analyzer".
 
-## Contenido del Repositorio
+## Table of Contents
 
 ```bash
-├── Librerias
+├── Libraries
 │   ├── test
 │   │   ├── TestADC
 │   │   ├── TestCMSIS
@@ -27,7 +27,7 @@ Este repositorio contiene una colección de proyectos y tareas desarrolladas dur
 │   ├── mcu_headers/CMSIS
 │   ├── DSP_DRIVER/Include
 │   └── PeripheralDrivers
-├── Entregables
+├── Assignments
 │   ├── Digital
 │   ├── Examen
 │   ├── SolucionTarea2
@@ -35,7 +35,7 @@ Este repositorio contiene una colección de proyectos y tareas desarrolladas dur
 │   ├── SolucionTarea4Especial
 │   ├── Taller_8
 │   └── Talleres
-├── Proyecto
+├── Project
 │   ├── LED_AudioAnalizer_2.0
 │   └── LED_AudioAnalizer_3
 ├── README.md
@@ -44,23 +44,26 @@ Este repositorio contiene una colección de proyectos y tareas desarrolladas dur
 
 # LED Audio Analyzer
 
-El proyecto LED Audio Analyzer es un Analizador de Espectro de Audio que utiliza matrices LED para visualizar de manera gráfica las frecuencias presentes en una señal de audio. Este proyecto combina conceptos de electrónica digital, programación de microcontroladores y manipulación de señales de audio.
+The LED Audio Analyzer project is an Audio Spectrum Analyzer that uses LED arrays to graphically display the frequencies present in an audio signal. This project combines concepts of digital electronics, microcontroller programming and audio signal manipulation.
 
-## Características Principales:
-### Visualización Gráfica: 
-Utiliza matrices LED para representar de forma visual las frecuencias de audio detectadas.
-### Análisis en Tiempo Real: 
-Proporciona un análisis en tiempo real de la señal de audio entrante.
-### Configuración Personalizada: 
-Permite ajustar parámetros como la sensibilidad, tasa de refresco y la resolución del espectro.
 
-## Funcionamiento:
-El LED Audio Analyzer captura la señal de audio mediante un microfono o conexion directa a dispositivos de audio; la procesa mediante una Fast Fourier Transform (FFT) para identificar las frecuencias presentes. Luego, utiliza las matrices LED para mostrar barras de intensidad luminosa correspondientes a cada frecuencia detectada. Este enfoque ofrece una representación gráfica única de la composición espectral de la señal de audio.
+## Main Features:
+### Graphical Display: 
+Uses LED arrays to visually represent the detected audio frequencies.
+### Real-Time Analysis: 
+Provides real-time analysis of the incoming audio signal.
+### Custom Settings: 
+Allows you to adjust parameters such as sensitivity, refresh rate and spectrum resolution.
 
-## Uso y Aplicaciones:
-### Proyectos de Iluminación Interactiva: 
-Puede integrarse en proyectos de iluminación interactiva que responden a la música o sonidos ambientales.
-### Educación en Electrónica Digital: 
-Sirve como una herramienta educativa para entender la relación entre la señal de audio y su representación gráfica.
 
-Este proyecto destaca la versatilidad y la aplicación práctica de los conceptos aprendidos en la materia, proporcionando una experiencia de aprendizaje enriquecedora en el campo de la Electrónica Digital.
+## Operation:
+The LED Audio Analyzer captures the audio signal through a microphone or direct connection to audio devices; processes it through a Fast Fourier Transform (FFT) to identify the frequencies present. It then uses LED arrays to display light intensity bars corresponding to each detected frequency. This approach provides a unique graphical representation of the spectral composition of the audio signal.
+
+
+## Usage and Applications:
+### Interactive Lighting Projects: 
+Can be integrated into interactive lighting projects that respond to music or ambient sounds.
+### Digital Electronics Education: 
+Serves as an educational tool to understand the relationship between the audio signal and its graphical representation.
+
+This project highlights the versatility and practical application of the concepts learned in the subject, providing an enriching learning experience in the field of Digital Electronics.
