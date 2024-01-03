@@ -43,7 +43,7 @@ This repository contains a collection of projects and assignments developed duri
 ```
 
 # LED Audio Analyzer
-
+![Screenshot_2024-01-03-08-39-07-068_com google android apps docs](https://github.com/ojcardenass/ojcardenass_entregasTallerV/assets/124924365/4c1d6415-dc73-42ef-b062-27e27fbe0012)
 The LED Audio Analyzer project is an Audio Spectrum Analyzer that uses LED arrays to graphically display the frequencies present in an audio signal. This project combines concepts of digital electronics, microcontroller programming and audio signal manipulation.
 
 
