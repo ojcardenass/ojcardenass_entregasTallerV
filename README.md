@@ -59,6 +59,21 @@ Allows you to adjust parameters such as sensitivity, refresh rate and spectrum r
 ## Operation:
 The LED Audio Analyzer captures the audio signal through a microphone or direct connection to audio devices; processes it through a Fast Fourier Transform (FFT) to identify the frequencies present. It then uses LED arrays to display light intensity bars corresponding to each detected frequency. This approach provides a unique graphical representation of the spectral composition of the audio signal.
 
+## Materials Used
+
+### Development Board
+- **STM32F411RE Nucleo**
+
+### Displays
+- **LCD Display 2004A with I2C Module**
+- **32 x 8 Dot Matrix Display with MAX7219**
+
+### Audio Components
+- **MAX9814 Microphone Amplifier**
+- **3-Pole 3.5mm Stereo Headphone Jack**
+
+### Other Components
+- **3.3V/5V Output Breadboard Power Supply**
 
 ## Usage and Applications:
 ### Interactive Lighting Projects: 
